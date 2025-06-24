@@ -1,0 +1,54 @@
+{
+  "extends": "@tsconfig/node22/tsconfig.json",
+  "ts-node": {
+    "esm": true,
+    "module": "es2024"
+  },
+  "include": ["src/**/*.ts", "test/**/*.ts", "scripts/**/*.ts"],
+  "compilerOptions": {
+    // Target environment
+    "target": "ES2024",
+    "lib": ["ES2024"],
+
+    // Module resolution
+    "module": "es2022",
+    "moduleResolution": "node",
+    "moduleDetection": "force",
+    "baseUrl": "./",
+
+    // Declaration and emit
+    "declaration": true,
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "sourceMap": true,
+    "outDir": "./dist",
+    "incremental": true,
+
+    // Strictness options
+    "strict": true,
+    "strictNullChecks": true,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "noImplicitOverride": true,
+    "strictBindCallApply": true,
+    "noUncheckedIndexedAccess": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true,
+
+    // Interop and modules
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+
+    // Miscellaneous
+    "erasableSyntaxOnly": true,
+    "skipLibCheck": true,
+    "allowUnreachableCode": false,
+    "allowUnusedLabels": false,
+    "noErrorTruncation": true,
+    "preserveWatchOutput": true
+  }
+}
