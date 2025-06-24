@@ -1,0 +1,13 @@
+{
+  "editor.formatOnPaste": true,
+  "editor.formatOnSave": true,
+  "[markdown]": {
+    "editor.defaultFormatter": "DavidAnson.vscode-markdownlint"
+  },
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "files.associations": {
+    "AUTHORS": "plaintext",
+    "LICENSE": "plaintext"
+  },
+  "workbench.iconTheme": "material-icon-theme"
+}
