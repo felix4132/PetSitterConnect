@@ -1,0 +1,10 @@
+# Markdown linting configuration
+
+default: true
+
+MD013:
+  code_block_line_length: 150 # Set maximum line length for code blocks
+MD028: false # Allow blank lines inside blockquotes
+MD033: false # Allow inline HTML
+MD034: false # Allow bare URLs
+MD041: false # Disable first-line-heading rule
