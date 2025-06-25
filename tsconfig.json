@@ -1,19 +1,12 @@
 {
-  "extends": "@tsconfig/node22/tsconfig.json",
-  "ts-node": {
-    "esm": true,
-    "module": "es2024"
-  },
   "include": ["src/**/*.ts", "test/**/*.ts", "scripts/**/*.ts"],
   "compilerOptions": {
     // Target environment
-    "target": "ES2024",
-    "lib": ["ES2024"],
+    "target": "ES2022",
+    "lib": ["ES2022"],
 
     // Module resolution
-    "module": "es2022",
-    "moduleResolution": "node",
-    "moduleDetection": "force",
+    "module": "nodenext",
     "baseUrl": "./",
 
     // Declaration and emit
