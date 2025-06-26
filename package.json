@@ -4,16 +4,6 @@
   "description": "backend server for PetSitterConnect platform",
   "license": "MIT",
   "private": true,
-  "contributors": [
-    {
-      "name": "Felix Jaeger",
-      "email": "jafe1011@h-ka.de"
-    },
-    {
-      "name": "Dummy User",
-      "email": "dummymail@dummy.com"
-    }
-  ],
   "engines": {
     "node": ">=22.16.0",
     "npm": ">=11.4.2"
