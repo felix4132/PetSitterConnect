@@ -9,5 +9,10 @@
     "AUTHORS": "plaintext",
     "LICENSE": "plaintext"
   },
-  "workbench.iconTheme": "material-icon-theme"
+  "workbench.iconTheme": "material-icon-theme",
+  "github.copilot.chat.commitMessageGeneration.instructions": [
+    {
+      "text": "Write the commit message in English and follow the conventional commits specification (https://www.conventionalcommits.org/)."
+    }
+  ]
 }
