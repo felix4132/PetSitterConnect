@@ -7,7 +7,8 @@
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "files.associations": {
     "AUTHORS": "plaintext",
-    "LICENSE": "plaintext"
+    "LICENSE": "plaintext",
+    "CODEOWNERS": "plaintext"
   },
   "workbench.iconTheme": "material-icon-theme",
   "github.copilot.chat.commitMessageGeneration.instructions": [

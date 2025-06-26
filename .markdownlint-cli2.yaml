@@ -1,1 +1,2 @@
-"ignores": ["AUTHORS", "LICENSE", "node_modules/**", "README.Nest.md"]
+"ignores":
+  ["AUTHORS", "LICENSE", "CODEOWNERS", "node_modules/**", "README.Nest.md"]
