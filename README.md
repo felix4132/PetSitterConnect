@@ -3,9 +3,21 @@
 Ein moderner Backend-Server für die PetSitterConnect-Plattform,
 gebaut mit Nest.js, TypeScript und ESM.
 
+## � Technologie-Stack
+
+- **Framework**: Nest.js 11
+- **Sprache**: TypeScript 5.8
+- **Runtime**: Node.js 22+
+- **Compiler**: SWC
+- **Testing**: Vitest 3
+- **Linting**: ESLint mit TypeScript-ESLint
+- **Formatierung**: Prettier
+- **Sicherheit**: Helmet, Rate Limiting, CORS
+- **Architektur**: Layered Architecture mit Domain-Driven Design
+
 ## 🚀 Features
 
-- **Nest.js 11** - Modularer und skalierbarer Backend-Framework
+- **Modulare Architektur** - Saubere Trennung von Geschäftslogik und Infrastruktur
 - **TypeScript 5.8** - Vollständig typisiert mit strengen Einstellungen
 - **ESM (ES Modules)** - Moderne JavaScript-Module-Syntax
 - **Vitest** - Schnelles und modernes Testing-Framework
@@ -20,7 +32,7 @@ gebaut mit Nest.js, TypeScript und ESM.
 - Node.js >= 22.16.0
 - npm >= 11.4.2
 
-## 🛠️ Installation
+## 🛠️ Installation & Setup
 
 ```bash
 # Repository klonen
@@ -48,6 +60,105 @@ API_PREFIX=api/v1
 RATE_LIMIT_TTL=60
 RATE_LIMIT_LIMIT=100
 # ... weitere Konfigurationen
+```
+
+## 📚 API-Dokumentation
+
+Der Server läuft standardmäßig auf `http://localhost:3000/api/v1`
+
+### Listings
+
+- `POST /listings` – legt ein neues Inserat an
+- `GET /listings` – sucht nach Inseraten
+- `GET /listings/:id` – ruft ein Inserat per ID ab
+- `GET /listings/owner/:ownerId` – zeigt alle Inserate eines Besitzers
+
+### Applications
+
+- `POST /listings/:id/applications` – bewirbt sich auf ein Inserat
+- `PATCH /applications/:id` – aktualisiert den Status einer Bewerbung
+- `GET /sitters/:sitterId/applications` – Bewerbungen eines Sitters
+- `GET /listings/:listingId/applications` – Bewerbungen zu einem Inserat
+
+## 🏗️ Projektstruktur
+
+```text
+src/
+├── app/
+│   ├── app.controller.ts
+│   ├── app.module.ts
+│   └── app.service.ts
+├── domain/
+│   ├── listings/
+│   │   └── listing.entity.ts
+│   └── applications/
+│       └── application.entity.ts
+├── infrastructure/
+│   └── database/
+│       └── database.service.ts
+├── modules/
+│   ├── listings/
+│   │   ├── listings.controller.ts
+│   │   ├── listings.module.ts
+│   │   └── listings.service.ts
+│   └── applications/
+│       ├── applications.controller.ts
+│       ├── applications.module.ts
+│       └── applications.service.ts
+└── main.ts
+
+test/
+├── app.controller.spec.ts  # Unit-Tests
+└── *.e2e-spec.ts           # E2E-Tests
+```
+
+## 🏛️ Architektur-Pattern
+
+Die Anwendung folgt einer **Layered Architecture** mit **Domain-Driven Design** Prinzipien:
+
+```text
+┌─────────────────────────────────────┐
+│            AppModule                │
+│  (Globale Konfiguration & Setup)    │
+├─────────────────────────────────────┤
+│  Feature Modules:                   │
+│  ├── ListingsModule                 │
+│  ├── ApplicationsModule             │
+│  └── DatabaseModule                 │
+├─────────────────────────────────────┤
+│  Controllers (HTTP Layer):          │
+│  ├── AppController (Root)           │
+│  ├── ListingsController             │
+│  └── ApplicationsController         │
+├─────────────────────────────────────┤
+│  Services (Business Logic):         │
+│  ├── AppService                     │
+│  ├── ListingsService                │
+│  └── ApplicationsService            │
+├─────────────────────────────────────┤
+│  Domain Entities:                   │
+│  ├── Listing                        │
+│  └── Application                    │
+├─────────────────────────────────────┤
+│  Infrastructure Layer:              │
+│  └── DatabaseService                │
+└─────────────────────────────────────┘
+```
+
+### Schichten-Verantwortlichkeiten
+
+- **AppModule**: Zentraler Orchestrator für alle Module und globale Konfiguration
+- **Controller Layer**: HTTP-Request-Handling und Response-Formatting
+- **Service Layer**: Business-Logik und Datenverarbeitung
+- **Domain Layer**: Entitäten und Geschäftsregeln
+- **Infrastructure Layer**: Datenpersistierung und externe Services
+
+### Datenfluss
+
+```text
+HTTP Request → Controller → Service → Infrastructure → Domain
+     ↓              ↓          ↓            ↓           ↓
+HTTP Response ← Controller ← Service ← Infrastructure ← Domain
 ```
 
 ## 🏃‍♂️ Entwicklung
@@ -101,56 +212,6 @@ npm run lint:check
 npm run typecheck
 ```
 
-## 📚 API-Dokumentation
-
-Der Server läuft standardmäßig auf `http://localhost:3000/api/v1`
-
-### Listings
-
-- `POST /listings` – legt ein neues Inserat an
-- `GET /listings` – sucht nach Inseraten
-- `GET /listings/:id` – ruft ein Inserat per ID ab
-- `GET /listings/owner/:ownerId` – zeigt alle Inserate eines Besitzers
-
-### Applications
-
-- `POST /listings/:id/applications` – bewirbt sich auf ein Inserat
-- `PATCH /applications/:id` – aktualisiert den Status einer Bewerbung
-- `GET /sitters/:sitterId/applications` – Bewerbungen eines Sitters
-- `GET /listings/:listingId/applications` – Bewerbungen zu einem Inserat
-
-## 🏗️ Projektstruktur
-
-```text
-src/
-├── app/
-│   ├── app.controller.ts
-│   ├── app.module.ts
-│   └── app.service.ts
-├── domain/
-│   ├── listings/
-│   │   └── listing.entity.ts
-│   └── applications/
-│       └── application.entity.ts
-├── infrastructure/
-│   └── database/
-│       └── database.service.ts
-├── modules/
-│   ├── listings/
-│   │   ├── listings.controller.ts
-│   │   ├── listings.module.ts
-│   │   └── listings.service.ts
-│   └── applications/
-│       ├── applications.controller.ts
-│       ├── applications.module.ts
-│       └── applications.service.ts
-└── main.ts
-
-test/
-├── app.controller.spec.ts  # Unit-Tests
-└── *.e2e-spec.ts           # E2E-Tests
-```
-
 ## 🚀 Deployment
 
 ```bash
@@ -164,13 +225,16 @@ npm ci --only=production
 npm run start:prod
 ```
 
-## 📦 Technologie-Stack
+### Umgebungsvariablen für Produktion
 
-- **Framework**: Nest.js 11
-- **Sprache**: TypeScript 5.8
-- **Runtime**: Node.js 22+
-- **Compiler**: SWC
-- **Testing**: Vitest 3
-- **Linting**: ESLint mit TypeScript-ESLint
-- **Formatierung**: Prettier
-- **Sicherheit**: Helmet, Rate Limiting, CORS
+Stellen Sie sicher, dass folgende Variablen in der Produktionsumgebung gesetzt sind:
+
+```bash
+NODE_ENV=production
+PORT=3000
+API_PREFIX=api/v1
+ALLOWED_ORIGINS=https://your-frontend-domain.com
+RATE_LIMIT_TTL=60
+RATE_LIMIT_LIMIT=100
+LOG_LEVEL=warn
+```
