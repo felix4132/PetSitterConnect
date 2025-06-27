@@ -1,11 +1,41 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { AppController } from './app.controller.js';
+import { AppService } from './app.service.js';
 
 @Module({
-    imports: [],
+    imports: [
+        ConfigModule.forRoot({
+            isGlobal: true,
+            envFilePath: ['.env.local', '.env'],
+        }),
+        ThrottlerModule.forRootAsync({
+            imports: [ConfigModule],
+            inject: [ConfigService],
+            useFactory: (configService: ConfigService) => [
+                {
+                    ttl:
+                        parseInt(
+                            configService.get('RATE_LIMIT_TTL') ?? '60',
+                            10,
+                        ) * 1000, // Convert seconds to milliseconds
+                    limit: parseInt(
+                        configService.get('RATE_LIMIT_LIMIT') ?? '100',
+                        10,
+                    ),
+                },
+            ],
+        }),
+    ],
     controllers: [AppController],
-    providers: [AppService],
+    providers: [
+        AppService,
+        {
+            provide: APP_GUARD,
+            useClass: ThrottlerGuard,
+        },
+    ],
 })
-// eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class AppModule {}
