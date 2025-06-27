@@ -14,10 +14,6 @@ export default defineConfig({
         exclude: ['node_modules', 'dist'],
         setupFiles: ['reflect-metadata'],
         globals: true,
-        threads: false,
-        deps: {
-            registerNodeLoader: true,
-        },
         coverage: {
             provider: 'v8',
             reporter: ['text', 'json', 'html', 'lcov'],
