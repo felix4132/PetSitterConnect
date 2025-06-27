@@ -1,7 +1,7 @@
-import { describe, it, beforeEach, afterEach, expect } from 'vitest';
-import { Test, TestingModule } from '@nestjs/testing';
 import { type INestApplication } from '@nestjs/common';
+import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { AppModule } from '../src/app/app.module.ts';
 
 describe('CORS Configuration (e2e)', () => {
