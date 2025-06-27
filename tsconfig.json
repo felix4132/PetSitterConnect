@@ -53,6 +53,7 @@
     // Miscellaneous
     "erasableSyntaxOnly": false,
     "verbatimModuleSyntax": true,
+    "allowImportingTsExtensions": true,
     "skipLibCheck": true,
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,

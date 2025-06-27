@@ -4,6 +4,9 @@ import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
+import { ListingsModule } from '../modules/listings/listings.module.js';
+import { ApplicationsModule } from '../modules/applications/applications.module.js';
+import { DatabaseModule } from '../infrastructure/database/database.module.js';
 
 @Module({
     imports: [
@@ -29,6 +32,9 @@ import { AppService } from './app.service.js';
                 ],
             }),
         }),
+        DatabaseModule,
+        ListingsModule,
+        ApplicationsModule,
     ],
     controllers: [AppController],
     providers: [
