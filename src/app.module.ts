@@ -14,19 +14,20 @@ import { AppService } from './app.service.js';
         ThrottlerModule.forRootAsync({
             imports: [ConfigModule],
             inject: [ConfigService],
-            useFactory: (configService: ConfigService) => [
-                {
-                    ttl:
-                        parseInt(
+            useFactory: (configService: ConfigService) => ({
+                throttlers: [
+                    {
+                        ttl: parseInt(
                             configService.get('RATE_LIMIT_TTL') ?? '60',
                             10,
-                        ) * 1000, // Convert seconds to milliseconds
-                    limit: parseInt(
-                        configService.get('RATE_LIMIT_LIMIT') ?? '100',
-                        10,
-                    ),
-                },
-            ],
+                        ),
+                        limit: parseInt(
+                            configService.get('RATE_LIMIT_LIMIT') ?? '100',
+                            10,
+                        ),
+                    },
+                ],
+            }),
         }),
     ],
     controllers: [AppController],
