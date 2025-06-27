@@ -7,9 +7,9 @@ import {
     Patch,
     Post,
 } from '@nestjs/common';
-import { ApplicationsService } from './applications.service.js';
-import type { ApplyDto, UpdateApplicationDto } from './applications.service.js';
 import type { Application } from '../../domain/applications/application.entity.js';
+import type { ApplyDto, UpdateApplicationDto } from './applications.service.js';
+import { ApplicationsService } from './applications.service.js';
 
 @Controller()
 export class ApplicationsController {

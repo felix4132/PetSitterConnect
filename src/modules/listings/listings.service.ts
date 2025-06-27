@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { DatabaseService } from '../../infrastructure/database/database.service.js';
 import type { Listing } from '../../domain/listings/listing.entity.js';
+import { DatabaseService } from '../../infrastructure/database/database.service.js';
 
 export interface CreateListingDto {
     ownerId: string;
