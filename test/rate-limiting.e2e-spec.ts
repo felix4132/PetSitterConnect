@@ -1,19 +1,38 @@
 import { type INestApplication } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
 import { Test, TestingModule } from '@nestjs/testing';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import request from 'supertest';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { AppModule } from '../src/app.module.js';
+import { AppController } from '../src/app.controller.js';
+import { AppService } from '../src/app.service.js';
 
 describe('Rate Limiting (e2e)', () => {
     let app: INestApplication;
 
     beforeEach(async () => {
-        // Set rate limiting environment variables for testing
-        process.env.RATE_LIMIT_TTL = '1'; // 1 second for faster testing
-        process.env.RATE_LIMIT_LIMIT = '3'; // 3 requests per second
-
         const moduleFixture: TestingModule = await Test.createTestingModule({
-            imports: [AppModule],
+            imports: [
+                ConfigModule.forRoot({
+                    isGlobal: true,
+                    envFilePath: ['.env.local', '.env'],
+                }),
+                ThrottlerModule.forRoot([
+                    {
+                        ttl: 1000, // 1 second for faster testing
+                        limit: 3, // 3 requests per second
+                    },
+                ]),
+            ],
+            controllers: [AppController],
+            providers: [
+                AppService,
+                {
+                    provide: APP_GUARD,
+                    useClass: ThrottlerGuard,
+                },
+            ],
         }).compile();
 
         app = moduleFixture.createNestApplication();
@@ -23,9 +42,6 @@ describe('Rate Limiting (e2e)', () => {
 
     afterEach(async () => {
         await app.close();
-        // Reset environment variables
-        delete process.env.RATE_LIMIT_TTL;
-        delete process.env.RATE_LIMIT_LIMIT;
     });
 
     it('should allow requests within the rate limit', async () => {
