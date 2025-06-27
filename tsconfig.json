@@ -52,6 +52,7 @@
 
     // Miscellaneous
     "erasableSyntaxOnly": false,
+    "verbatimModuleSyntax": true,
     "skipLibCheck": true,
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,
