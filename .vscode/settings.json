@@ -1,8 +1,18 @@
 {
   "editor.formatOnPaste": true,
   "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit",
+    "source.organizeImports": "explicit"
+  },
   "[markdown]": {
     "editor.defaultFormatter": "DavidAnson.vscode-markdownlint"
+  },
+  "[yaml]": {
+    "editor.defaultFormatter": "redhat.vscode-yaml"
+  },
+  "[dockerfile]": {
+    "editor.defaultFormatter": "ms-azuretools.vscode-containers"
   },
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "files.associations": {
@@ -10,6 +20,21 @@
     "LICENSE": "plaintext",
     "CODEOWNERS": "plaintext"
   },
+  "files.exclude": {
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/coverage": true,
+    "**/*.tsbuildinfo": true
+  },
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/coverage": true
+  },
+  "typescript.preferences.importModuleSpecifier": "relative",
+  "typescript.preferences.includePackageJsonAutoImports": "on",
+  "vitest.nodeExecutable": "node",
+  "vitest.enable": true,
   "workbench.iconTheme": "material-icon-theme",
   "github.copilot.chat.commitMessageGeneration.instructions": [
     {

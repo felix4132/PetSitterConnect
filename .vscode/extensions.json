@@ -1,0 +1,17 @@
+{
+  "recommendations": [
+    "editorconfig.editorconfig",
+    "esbenp.prettier-vscode",
+    "github.copilot",
+    "github.copilot-chat",
+    "gruntfuggly.todo-tree",
+    "pmneo.tsimporter",
+    "yoavbls.pretty-ts-errors",
+    "usernamehw.errorlens",
+    "dbaeumer.vscode-eslint",
+    "humao.rest-client",
+    "mikestead.dotenv",
+    "ms-vscode-remote.remote-containers",
+    "redhat.vscode-yaml"
+  ]
+}
