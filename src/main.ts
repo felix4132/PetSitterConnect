@@ -1,5 +1,6 @@
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import helmet from 'helmet';
 import 'reflect-metadata';
 import { AppModule } from './app.module.js';
 
@@ -30,6 +31,9 @@ async function bootstrap() {
             transform: true,
         }),
     );
+
+    // Security headers
+    app.use(helmet());
 
     // API prefix from environment
     app.setGlobalPrefix(apiPrefix);
