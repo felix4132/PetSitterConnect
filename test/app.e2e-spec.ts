@@ -2,7 +2,7 @@ import { describe, it, beforeEach, afterEach, expect } from 'vitest';
 import { Test, TestingModule } from '@nestjs/testing';
 import { type INestApplication } from '@nestjs/common';
 import request from 'supertest';
-import { AppModule } from '../src/app.module.js';
+import { AppModule } from '../src/app/app.module.ts';
 
 describe('AppController (e2e)', () => {
     let app: INestApplication;
