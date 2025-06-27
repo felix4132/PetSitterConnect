@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { DatabaseService } from '../../infrastructure/database/database.service.js';
 import type { Application } from '../../domain/applications/application.entity.js';
+import { DatabaseService } from '../../infrastructure/database/database.service.js';
 
 export interface ApplyDto {
     sitterId: string;

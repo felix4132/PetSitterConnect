@@ -7,9 +7,9 @@ import {
     Post,
     Query,
 } from '@nestjs/common';
-import { ListingsService } from './listings.service.js';
-import type { CreateListingDto } from './listings.service.js';
 import type { Listing } from '../../domain/listings/listing.entity.js';
+import type { CreateListingDto } from './listings.service.js';
+import { ListingsService } from './listings.service.js';
 
 @Controller('listings')
 export class ListingsController {
