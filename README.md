@@ -105,14 +105,46 @@ npm run typecheck
 
 Der Server läuft standardmäßig auf `http://localhost:3000/api/v1`
 
+### Listings
+
+- `POST /listings` – legt ein neues Inserat an
+- `GET /listings` – sucht nach Inseraten
+- `GET /listings/:id` – ruft ein Inserat per ID ab
+- `GET /listings/owner/:ownerId` – zeigt alle Inserate eines Besitzers
+
+### Applications
+
+- `POST /listings/:id/applications` – bewirbt sich auf ein Inserat
+- `PATCH /applications/:id` – aktualisiert den Status einer Bewerbung
+- `GET /sitters/:sitterId/applications` – Bewerbungen eines Sitters
+- `GET /listings/:listingId/applications` – Bewerbungen zu einem Inserat
+
 ## 🏗️ Projektstruktur
 
 ```text
 src/
-├── app.controller.ts    # Haupt-Controller
-├── app.module.ts        # Haupt-Modul
-├── app.service.ts       # Haupt-Service
-└── main.ts              # Anwendungs-Einstiegspunkt
+├── app/
+│   ├── app.controller.ts
+│   ├── app.module.ts
+│   └── app.service.ts
+├── domain/
+│   ├── listings/
+│   │   └── listing.entity.ts
+│   └── applications/
+│       └── application.entity.ts
+├── infrastructure/
+│   └── database/
+│       └── database.service.ts
+├── modules/
+│   ├── listings/
+│   │   ├── listings.controller.ts
+│   │   ├── listings.module.ts
+│   │   └── listings.service.ts
+│   └── applications/
+│       ├── applications.controller.ts
+│       ├── applications.module.ts
+│       └── applications.service.ts
+└── main.ts
 
 test/
 ├── app.controller.spec.ts  # Unit-Tests
