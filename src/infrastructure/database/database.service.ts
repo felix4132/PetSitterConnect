@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import type { Listing } from '../../domain/listings/listing.entity.js';
 import type { Application } from '../../domain/applications/application.entity.js';
+import type { Listing } from '../../domain/listings/listing.entity.js';
 
 @Injectable()
 export class DatabaseService {
