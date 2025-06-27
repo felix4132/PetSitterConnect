@@ -53,11 +53,11 @@ RATE_LIMIT_LIMIT=100
 ## 🏃‍♂️ Entwicklung
 
 ```bash
-# Entwicklungsserver starten
-npm run start:dev
-
 # Build erstellen
 npm run build
+
+# Entwicklungsserver starten
+npm run start:dev
 
 # Produktionsserver starten
 npm run start:prod
