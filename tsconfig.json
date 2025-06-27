@@ -1,4 +1,8 @@
 {
+  "extends": [
+    "@tsconfig/node22/tsconfig.json",
+    "@tsconfig/node-ts/tsconfig.json"
+  ],
   "include": ["src/**/*.ts", "test/**/*.ts", "scripts/**/*.ts"],
   "compilerOptions": {
     // Target environment
@@ -7,16 +11,23 @@
 
     // Module resolution
     "module": "nodenext",
+    "moduleResolution": "nodenext",
     "baseUrl": "./",
+    "isolatedModules": true,
 
     // Declaration and emit
     "declaration": true,
-    "removeComments": true,
+    "declarationMap": true,
+    "removeComments": false,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "sourceMap": true,
     "outDir": "./dist",
     "incremental": true,
+    "tsBuildInfoFile": "./dist/.tsbuildinfo",
+
+    // Vitest globals
+    "types": ["vitest/globals", "node"],
 
     // Strictness options
     "strict": true,
@@ -37,7 +48,7 @@
     "allowSyntheticDefaultImports": true,
 
     // Miscellaneous
-    "erasableSyntaxOnly": true,
+    "erasableSyntaxOnly": false,
     "skipLibCheck": true,
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,
