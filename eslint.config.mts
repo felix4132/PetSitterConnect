@@ -6,8 +6,10 @@ import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
     {
-        files: ['src/**/*.ts', 'test/**/*.ts'],
         ignores: ['dist/**', 'node_modules/**', 'coverage/**'],
+    },
+    {
+        files: ['src/**/*.ts', 'test/**/*.ts'],
 
         extends: [
             eslint.configs.recommended,

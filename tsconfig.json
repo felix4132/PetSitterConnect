@@ -13,6 +13,9 @@
     "module": "nodenext",
     "moduleResolution": "nodenext",
     "baseUrl": "./",
+    "paths": {
+      "@/*": ["src/*"]
+    },
     "isolatedModules": true,
 
     // Declaration and emit
