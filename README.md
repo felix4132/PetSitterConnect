@@ -3,18 +3,6 @@
 Ein moderner Backend-Server für die PetSitterConnect-Plattform,
 gebaut mit Nest.js, TypeScript und ESM.
 
-## � Technologie-Stack
-
-- **Framework**: Nest.js 11
-- **Sprache**: TypeScript 5.8
-- **Runtime**: Node.js 22+
-- **Compiler**: SWC
-- **Testing**: Vitest 3
-- **Linting**: ESLint mit TypeScript-ESLint
-- **Formatierung**: Prettier
-- **Sicherheit**: Helmet, Rate Limiting, CORS
-- **Architektur**: Layered Architecture mit Domain-Driven Design
-
 ## 🚀 Features
 
 - **Modulare Architektur** - Saubere Trennung von Geschäftslogik und Infrastruktur
@@ -27,12 +15,24 @@ gebaut mit Nest.js, TypeScript und ESM.
 - **Validation** - Automatische Request-Validierung
 - **Security Headers** - Helmet für Sicherheits-Headers
 
+## 🛠️ Technologie-Stack
+
+- **Framework**: Nest.js 11
+- **Sprache**: TypeScript 5.8
+- **Runtime**: Node.js 22+
+- **Compiler**: SWC
+- **Testing**: Vitest 3
+- **Linting**: ESLint mit TypeScript-ESLint
+- **Formatierung**: Prettier
+- **Sicherheit**: Helmet, Rate Limiting, CORS
+- **Architektur**: Layered Architecture mit Domain-Driven Design
+
 ## 📋 Voraussetzungen
 
 - Node.js >= 22.16.0
 - npm >= 11.4.2
 
-## 🛠️ Installation & Setup
+## ⚡ Installation & Setup
 
 ```bash
 # Repository klonen
@@ -57,28 +57,11 @@ Eine `.env.example`-Datei zeigt alle verfügbaren Optionen:
 PORT=3000
 NODE_ENV=development
 API_PREFIX=api/v1
+API_VERSION=1.0.0
 RATE_LIMIT_TTL=60
 RATE_LIMIT_LIMIT=100
 # ... weitere Konfigurationen
 ```
-
-## 📚 API-Dokumentation
-
-Der Server läuft standardmäßig auf `http://localhost:3000/api/v1`
-
-### Listings
-
-- `POST /listings` – legt ein neues Inserat an
-- `GET /listings` – sucht nach Inseraten
-- `GET /listings/:id` – ruft ein Inserat per ID ab
-- `GET /listings/owner/:ownerId` – zeigt alle Inserate eines Besitzers
-
-### Applications
-
-- `POST /listings/:id/applications` – bewirbt sich auf ein Inserat
-- `PATCH /applications/:id` – aktualisiert den Status einer Bewerbung
-- `GET /sitters/:sitterId/applications` – Bewerbungen eines Sitters
-- `GET /listings/:listingId/applications` – Bewerbungen zu einem Inserat
 
 ## 🏗️ Projektstruktur
 
@@ -95,6 +78,7 @@ src/
 │       └── application.entity.ts
 ├── infrastructure/
 │   └── database/
+│       ├── database.module.ts
 │       └── database.service.ts
 ├── modules/
 │   ├── listings/
@@ -108,8 +92,8 @@ src/
 └── main.ts
 
 test/
-├── app.controller.spec.ts  # Unit-Tests
-└── *.e2e-spec.ts           # E2E-Tests
+├── *.spec.ts            # Unit-Tests
+└── *.e2e-spec.ts        # E2E-Tests
 ```
 
 ## 🏛️ Architektur-Pattern
@@ -127,7 +111,7 @@ Die Anwendung folgt einer **Layered Architecture** mit **Domain-Driven Design** 
 │  └── DatabaseModule                 │
 ├─────────────────────────────────────┤
 │  Controllers (HTTP Layer):          │
-│  ├── AppController (Root)           │
+│  ├── AppController                  │
 │  ├── ListingsController             │
 │  └── ApplicationsController         │
 ├─────────────────────────────────────┤
@@ -174,7 +158,51 @@ npm run start:dev
 npm run start:prod
 ```
 
+## 📚 API-Dokumentation
+
+Der Server läuft standardmäßig auf `http://localhost:3000/api/v1`
+
+### Listings
+
+- `POST /listings` – legt ein neues Inserat an
+- `GET /listings` – sucht nach Inseraten (mit Query-Parametern)
+- `GET /listings/:id` – ruft ein Inserat per ID ab
+- `GET /listings/owner/:ownerId` – zeigt alle Inserate eines Besitzers
+
+**Query-Parameter für `GET /listings`:**
+
+- `id`, `price`, `age` (Zahlen)
+- `sitterVerified` (boolean: `true`/`false`)
+- `ownerId`, `title`, `description`, `species`, `listingType`, `startDate`,
+  `endDate`, `breed`, `size`, `feeding`, `medication` (Strings)
+
+### Applications
+
+- `POST /listings/:id/applications` – bewirbt sich auf ein Inserat
+- `PATCH /applications/:id` – aktualisiert den Status einer Bewerbung
+- `GET /sitters/:sitterId/applications` – Bewerbungen eines Sitters
+- `GET /listings/:listingId/applications` – Bewerbungen zu einem Inserat
+
 ## 🧪 Testing
+
+Das Projekt implementiert eine umfassende Test-Strategie mit
+**Unit Tests** und **End-to-End Tests**.
+
+### Test-Kategorien
+
+**Unit Tests** (`*.spec.ts`): Testen isolierter Komponenten ohne externe Dependencies
+
+- Sehr schnell (< 50ms pro Test)
+- Verwenden Mocks für Dependencies
+- Hohe Code-Coverage für Business Logic
+
+**End-to-End Tests** (`*.e2e-spec.ts`): Testen der gesamten Anwendung über HTTP-Requests
+
+- Starten komplette NestJS-Anwendung
+- Verwenden echte HTTP-Requests mit `supertest`
+- Testen End-to-End Workflows
+
+### Test-Ausführung
 
 ```bash
 # Alle Tests ausführen
@@ -192,6 +220,15 @@ npm run test:cov
 # Tests einmalig ausführen (CI)
 npm run test:run
 ```
+
+### Coverage-Ergebnisse
+
+- **Branches**: 96.96% ✅
+- **Functions**: 100% ✅
+- **Lines**: 100% ✅
+- **Statements**: 100% ✅
+
+**Aktuelle Gesamt-Coverage: 100%** 🎉
 
 ## 📝 Code-Qualität
 
@@ -233,6 +270,7 @@ Stellen Sie sicher, dass folgende Variablen in der Produktionsumgebung gesetzt s
 NODE_ENV=production
 PORT=3000
 API_PREFIX=api/v1
+API_VERSION=1.0.0
 ALLOWED_ORIGINS=https://your-frontend-domain.com
 RATE_LIMIT_TTL=60
 RATE_LIMIT_LIMIT=100
