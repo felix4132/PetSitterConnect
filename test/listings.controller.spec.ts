@@ -1,11 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Listing } from '../src/domain/listings/listing.entity.ts';
+import { CreateListingDto } from '../src/modules/listings/dto/create-listing.dto.ts';
 import { ListingsController } from '../src/modules/listings/listings.controller.ts';
-import {
-    ListingsService,
-    type CreateListingDto,
-} from '../src/modules/listings/listings.service.ts';
+import { ListingsService } from '../src/modules/listings/listings.service.ts';
 
 describe('ListingsController', () => {
     let controller: ListingsController;
@@ -14,6 +12,7 @@ describe('ListingsController', () => {
         findAll: ReturnType<typeof vi.fn>;
         findOne: ReturnType<typeof vi.fn>;
         findByOwner: ReturnType<typeof vi.fn>;
+        findOneWithApplications: ReturnType<typeof vi.fn>;
     };
 
     beforeEach(async () => {
@@ -23,6 +22,7 @@ describe('ListingsController', () => {
             findAll: vi.fn(),
             findOne: vi.fn(),
             findByOwner: vi.fn(),
+            findOneWithApplications: vi.fn(),
         };
 
         const module: TestingModule = await Test.createTestingModule({
@@ -39,7 +39,7 @@ describe('ListingsController', () => {
     });
 
     describe('create', () => {
-        it('should create a new listing', () => {
+        it('should create a new listing', async () => {
             // Arrange
             const createDto: CreateListingDto = {
                 ownerId: 'owner1',
@@ -57,11 +57,27 @@ describe('ListingsController', () => {
                 feeding: 'twice a day',
                 medication: 'none',
             };
-            const expectedListing: Listing = { id: 1, ...createDto };
-            mockListingsService.create.mockReturnValue(expectedListing);
+            const expectedListing: Listing = {
+                id: 1,
+                ownerId: createDto.ownerId,
+                title: createDto.title,
+                description: createDto.description,
+                species: createDto.species,
+                listingType: createDto.listingType,
+                startDate: createDto.startDate,
+                endDate: createDto.endDate,
+                sitterVerified: createDto.sitterVerified,
+                price: createDto.price,
+                breed: createDto.breed,
+                age: createDto.age,
+                size: createDto.size,
+                feeding: createDto.feeding,
+                medication: createDto.medication,
+            };
+            mockListingsService.create.mockResolvedValue(expectedListing);
 
             // Act
-            const result = controller.create(createDto);
+            const result = await controller.create(createDto);
 
             // Assert
             expect(mockListingsService.create).toHaveBeenCalledWith(createDto);
@@ -70,7 +86,7 @@ describe('ListingsController', () => {
     });
 
     describe('find', () => {
-        it('should return all listings when no query parameters', () => {
+        it('should return all listings when no query parameters', async () => {
             // Arrange
             const mockListings: Listing[] = [
                 {
@@ -91,17 +107,17 @@ describe('ListingsController', () => {
                     medication: 'none',
                 },
             ];
-            mockListingsService.findAll.mockReturnValue(mockListings);
+            mockListingsService.findAll.mockResolvedValue(mockListings);
 
             // Act
-            const result = controller.find({});
+            const result = await controller.find({});
 
             // Assert
             expect(mockListingsService.findAll).toHaveBeenCalledWith({});
             expect(result).toEqual(mockListings);
         });
 
-        it('should parse query parameters correctly', () => {
+        it('should parse query parameters correctly', async () => {
             // Arrange
             const queryParams = {
                 price: '10',
@@ -115,10 +131,10 @@ describe('ListingsController', () => {
                 sitterVerified: true,
                 ownerId: 'owner1',
             };
-            mockListingsService.findAll.mockReturnValue([]);
+            mockListingsService.findAll.mockResolvedValue([]);
 
             // Act
-            controller.find(queryParams);
+            await controller.find(queryParams);
 
             // Assert
             expect(mockListingsService.findAll).toHaveBeenCalledWith(
@@ -126,22 +142,22 @@ describe('ListingsController', () => {
             );
         });
 
-        it('should ignore invalid numeric parameters', () => {
+        it('should ignore invalid numeric parameters', async () => {
             // Arrange
             const queryParams = {
                 price: 'invalid',
                 age: 'notanumber',
             };
-            mockListingsService.findAll.mockReturnValue([]);
+            mockListingsService.findAll.mockResolvedValue([]);
 
             // Act
-            controller.find(queryParams);
+            await controller.find(queryParams);
 
             // Assert
             expect(mockListingsService.findAll).toHaveBeenCalledWith({});
         });
 
-        it('should parse boolean parameters correctly', () => {
+        it('should parse boolean parameters correctly', async () => {
             // Arrange
             const queryParams = {
                 sitterVerified: 'false',
@@ -149,10 +165,10 @@ describe('ListingsController', () => {
             const expectedParsedQuery = {
                 sitterVerified: false,
             };
-            mockListingsService.findAll.mockReturnValue([]);
+            mockListingsService.findAll.mockResolvedValue([]);
 
             // Act
-            controller.find(queryParams);
+            await controller.find(queryParams);
 
             // Assert
             expect(mockListingsService.findAll).toHaveBeenCalledWith(
@@ -160,7 +176,7 @@ describe('ListingsController', () => {
             );
         });
 
-        it('should parse id query parameter correctly', () => {
+        it('should parse id query parameter correctly', async () => {
             // Arrange
             const queryParams = {
                 id: '123',
@@ -168,10 +184,10 @@ describe('ListingsController', () => {
             const expectedParsedQuery = {
                 id: 123,
             };
-            mockListingsService.findAll.mockReturnValue([]);
+            mockListingsService.findAll.mockResolvedValue([]);
 
             // Act
-            controller.find(queryParams);
+            await controller.find(queryParams);
 
             // Assert
             expect(mockListingsService.findAll).toHaveBeenCalledWith(
@@ -179,21 +195,21 @@ describe('ListingsController', () => {
             );
         });
 
-        it('should ignore invalid id parameter', () => {
+        it('should ignore invalid id parameter', async () => {
             // Arrange
             const queryParams = {
                 id: 'invalid-id',
             };
-            mockListingsService.findAll.mockReturnValue([]);
+            mockListingsService.findAll.mockResolvedValue([]);
 
             // Act
-            controller.find(queryParams);
+            await controller.find(queryParams);
 
             // Assert
             expect(mockListingsService.findAll).toHaveBeenCalledWith({});
         });
 
-        it('should parse species query parameter correctly', () => {
+        it('should parse species query parameter correctly', async () => {
             // Arrange
             const queryParams = {
                 species: 'cat',
@@ -201,10 +217,10 @@ describe('ListingsController', () => {
             const expectedParsedQuery = {
                 species: 'cat',
             };
-            mockListingsService.findAll.mockReturnValue([]);
+            mockListingsService.findAll.mockResolvedValue([]);
 
             // Act
-            controller.find(queryParams);
+            await controller.find(queryParams);
 
             // Assert
             expect(mockListingsService.findAll).toHaveBeenCalledWith(
@@ -212,7 +228,7 @@ describe('ListingsController', () => {
             );
         });
 
-        it('should parse listingType query parameter correctly', () => {
+        it('should parse listingType query parameter correctly', async () => {
             // Arrange
             const queryParams = {
                 listingType: 'drop-in-visit',
@@ -220,10 +236,10 @@ describe('ListingsController', () => {
             const expectedParsedQuery = {
                 listingType: 'drop-in-visit',
             };
-            mockListingsService.findAll.mockReturnValue([]);
+            mockListingsService.findAll.mockResolvedValue([]);
 
             // Act
-            controller.find(queryParams);
+            await controller.find(queryParams);
 
             // Assert
             expect(mockListingsService.findAll).toHaveBeenCalledWith(
@@ -231,7 +247,7 @@ describe('ListingsController', () => {
             );
         });
 
-        it('should parse all string fields correctly', () => {
+        it('should parse all string fields correctly', async () => {
             // Arrange
             const queryParams = {
                 title: 'Test Title',
@@ -253,10 +269,10 @@ describe('ListingsController', () => {
                 feeding: 'twice a day',
                 medication: 'none',
             };
-            mockListingsService.findAll.mockReturnValue([]);
+            mockListingsService.findAll.mockResolvedValue([]);
 
             // Act
-            controller.find(queryParams);
+            await controller.find(queryParams);
 
             // Assert
             expect(mockListingsService.findAll).toHaveBeenCalledWith(
@@ -264,7 +280,7 @@ describe('ListingsController', () => {
             );
         });
 
-        it('should handle complex query with all parameter types', () => {
+        it('should handle complex query with all parameter types', async () => {
             // Arrange
             const queryParams = {
                 id: '42',
@@ -288,10 +304,10 @@ describe('ListingsController', () => {
                 title: 'Beautiful Parrot',
                 breed: 'African Grey',
             };
-            mockListingsService.findAll.mockReturnValue([]);
+            mockListingsService.findAll.mockResolvedValue([]);
 
             // Act
-            controller.find(queryParams);
+            await controller.find(queryParams);
 
             // Assert
             expect(mockListingsService.findAll).toHaveBeenCalledWith(
@@ -301,9 +317,9 @@ describe('ListingsController', () => {
     });
 
     describe('findOne', () => {
-        it('should return a listing by id', () => {
+        it('should return a listing by id', async () => {
             // Arrange
-            const listingId = '1';
+            const listingId = 1;
             const mockListing: Listing = {
                 id: 1,
                 ownerId: 'owner1',
@@ -321,19 +337,31 @@ describe('ListingsController', () => {
                 feeding: 'twice a day',
                 medication: 'none',
             };
-            mockListingsService.findOne.mockReturnValue(mockListing);
+            mockListingsService.findOne.mockResolvedValue(mockListing);
 
             // Act
-            const result = controller.findOne(listingId);
+            const result = await controller.findOne(listingId);
 
             // Assert
             expect(mockListingsService.findOne).toHaveBeenCalledWith(1);
             expect(result).toEqual(mockListing);
         });
+
+        it('should throw NotFoundException when listing not found', async () => {
+            // Arrange
+            const listingId = 999;
+            mockListingsService.findOne.mockResolvedValue(null);
+
+            // Act & Assert
+            await expect(controller.findOne(listingId)).rejects.toThrow(
+                'Listing with ID 999 not found',
+            );
+            expect(mockListingsService.findOne).toHaveBeenCalledWith(999);
+        });
     });
 
     describe('findByOwner', () => {
-        it('should return listings for a specific owner', () => {
+        it('should return listings for a specific owner', async () => {
             // Arrange
             const ownerId = 'owner1';
             const mockListings: Listing[] = [
@@ -355,16 +383,66 @@ describe('ListingsController', () => {
                     medication: 'none',
                 },
             ];
-            mockListingsService.findByOwner.mockReturnValue(mockListings);
+            mockListingsService.findByOwner.mockResolvedValue(mockListings);
 
             // Act
-            const result = controller.findByOwner(ownerId);
+            const result = await controller.findByOwner(ownerId);
 
             // Assert
             expect(mockListingsService.findByOwner).toHaveBeenCalledWith(
                 ownerId,
             );
             expect(result).toEqual(mockListings);
+        });
+    });
+
+    describe('findOneWithApplications', () => {
+        it('should return a listing with applications by id', async () => {
+            // Arrange
+            const id = 1;
+            const mockListing: Listing = {
+                id: 1,
+                ownerId: 'owner1',
+                title: 'Test Listing',
+                description: 'test desc',
+                species: 'dog',
+                listingType: 'house-sitting',
+                startDate: '2025-07-01',
+                endDate: '2025-07-02',
+                sitterVerified: false,
+                price: 10,
+                breed: 'Bulldog',
+                age: 3,
+                size: 'medium',
+                feeding: 'twice a day',
+                medication: 'none',
+            };
+            mockListingsService.findOneWithApplications.mockResolvedValue(
+                mockListing,
+            );
+
+            // Act
+            const result = await controller.findOneWithApplications(id);
+
+            // Assert
+            expect(
+                mockListingsService.findOneWithApplications,
+            ).toHaveBeenCalledWith(1);
+            expect(result).toEqual(mockListing);
+        });
+
+        it('should throw NotFoundException when listing with applications not found', async () => {
+            // Arrange
+            const id = 999;
+            mockListingsService.findOneWithApplications.mockResolvedValue(null);
+
+            // Act & Assert
+            await expect(
+                controller.findOneWithApplications(id),
+            ).rejects.toThrow('Listing with ID 999 not found');
+            expect(
+                mockListingsService.findOneWithApplications,
+            ).toHaveBeenCalledWith(999);
         });
     });
 });

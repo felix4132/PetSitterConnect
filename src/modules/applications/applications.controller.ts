@@ -4,12 +4,17 @@ import {
     Get,
     Inject,
     Param,
+    ParseIntPipe,
     Patch,
     Post,
+    ValidationPipe,
 } from '@nestjs/common';
 import type { Application } from '../../domain/applications/application.entity.js';
-import type { ApplyDto, UpdateApplicationDto } from './applications.service.js';
 import { ApplicationsService } from './applications.service.js';
+import {
+    CreateApplicationDto,
+    UpdateApplicationDto,
+} from './dto/application.dto.js';
 
 @Controller()
 export class ApplicationsController {
@@ -19,37 +24,37 @@ export class ApplicationsController {
     ) {}
 
     @Post('listings/:id/applications')
-    apply(
-        @Param('id') id: string,
-        @Body() body: { sitterId: string },
-    ): Application | undefined {
-        const dto: ApplyDto = {
-            listingId: parseInt(id, 10),
+    async apply(
+        @Param('id', ParseIntPipe) id: number,
+        @Body(new ValidationPipe({ transform: true }))
+        body: CreateApplicationDto,
+    ): Promise<Application> {
+        return this.applicationsService.apply({
+            listingId: id,
             sitterId: body.sitterId,
-        };
-        return this.applicationsService.apply(dto);
+        });
     }
 
     @Patch('applications/:id')
-    updateStatus(
-        @Param('id') id: string,
-        @Body() body: UpdateApplicationDto,
-    ): Application | undefined {
-        return this.applicationsService.updateStatus(
-            parseInt(id, 10),
-            body.status,
-        );
+    async updateStatus(
+        @Param('id', ParseIntPipe) id: number,
+        @Body(new ValidationPipe({ transform: true }))
+        body: UpdateApplicationDto,
+    ): Promise<Application> {
+        return this.applicationsService.updateStatus(id, body.status);
     }
 
     @Get('sitters/:sitterId/applications')
-    bySitter(@Param('sitterId') sitterId: string): Application[] {
+    async bySitter(
+        @Param('sitterId') sitterId: string,
+    ): Promise<Application[]> {
         return this.applicationsService.applicationsBySitter(sitterId);
     }
 
     @Get('listings/:listingId/applications')
-    byListing(@Param('listingId') listingId: string): Application[] {
-        return this.applicationsService.applicationsByListing(
-            parseInt(listingId, 10),
-        );
+    async byListing(
+        @Param('listingId', ParseIntPipe) listingId: number,
+    ): Promise<Application[]> {
+        return this.applicationsService.applicationsByListing(listingId);
     }
 }

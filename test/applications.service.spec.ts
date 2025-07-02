@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Application } from '../src/domain/applications/application.entity.ts';
-import type { Listing } from '../src/domain/listings/listing.entity.ts';
-import { DatabaseService } from '../src/infrastructure/database/database.service.ts';
-import { ApplicationsService } from '../src/modules/applications/applications.service.ts';
+import type { Application } from '../src/domain/applications/application.entity.js';
+import type { Listing } from '../src/domain/listings/listing.entity.js';
+import { DatabaseService } from '../src/infrastructure/database/database.service.js';
+import { ApplicationsService } from '../src/modules/applications/applications.service.js';
 
 describe('ApplicationsService', () => {
     let service: ApplicationsService;
@@ -13,6 +13,7 @@ describe('ApplicationsService', () => {
         updateApplicationStatus: ReturnType<typeof vi.fn>;
         getApplicationsBySitter: ReturnType<typeof vi.fn>;
         getApplicationsByListing: ReturnType<typeof vi.fn>;
+        getApplicationsWithListings: ReturnType<typeof vi.fn>;
     };
 
     beforeEach(async () => {
@@ -23,6 +24,7 @@ describe('ApplicationsService', () => {
             updateApplicationStatus: vi.fn(),
             getApplicationsBySitter: vi.fn(),
             getApplicationsByListing: vi.fn(),
+            getApplicationsWithListings: vi.fn(),
         };
 
         const module: TestingModule = await Test.createTestingModule({
@@ -39,7 +41,7 @@ describe('ApplicationsService', () => {
     });
 
     describe('apply', () => {
-        it('should create an application when listing exists', () => {
+        it('should create an application when listing exists', async () => {
             // Arrange
             const applyDto = { sitterId: 'sitter1', listingId: 1 };
             const mockListing: Listing = {
@@ -66,13 +68,13 @@ describe('ApplicationsService', () => {
                 status: 'pending',
             };
 
-            mockDatabaseService.getListing.mockReturnValue(mockListing);
-            mockDatabaseService.addApplication.mockReturnValue(
+            mockDatabaseService.getListing.mockResolvedValue(mockListing);
+            mockDatabaseService.addApplication.mockResolvedValue(
                 expectedApplication,
             );
 
             // Act
-            const result = service.apply(applyDto);
+            const result = await service.apply(applyDto);
 
             // Assert
             expect(mockDatabaseService.getListing).toHaveBeenCalledWith(1);
@@ -83,23 +85,22 @@ describe('ApplicationsService', () => {
             expect(result).toEqual(expectedApplication);
         });
 
-        it('should return undefined when listing does not exist', () => {
+        it('should throw NotFoundException when listing does not exist', async () => {
             // Arrange
             const applyDto = { sitterId: 'sitter1', listingId: 999 };
-            mockDatabaseService.getListing.mockReturnValue(undefined);
+            mockDatabaseService.getListing.mockResolvedValue(null);
 
-            // Act
-            const result = service.apply(applyDto);
-
-            // Assert
+            // Act & Assert
+            await expect(service.apply(applyDto)).rejects.toThrow(
+                'Listing with ID 999 not found',
+            );
             expect(mockDatabaseService.getListing).toHaveBeenCalledWith(999);
             expect(mockDatabaseService.addApplication).not.toHaveBeenCalled();
-            expect(result).toBeUndefined();
         });
     });
 
     describe('updateStatus', () => {
-        it('should update application status', () => {
+        it('should update application status', async () => {
             // Arrange
             const applicationId = 1;
             const newStatus = 'accepted';
@@ -110,12 +111,12 @@ describe('ApplicationsService', () => {
                 status: 'accepted',
             };
 
-            mockDatabaseService.updateApplicationStatus.mockReturnValue(
+            mockDatabaseService.updateApplicationStatus.mockResolvedValue(
                 updatedApplication,
             );
 
             // Act
-            const result = service.updateStatus(applicationId, newStatus);
+            const result = await service.updateStatus(applicationId, newStatus);
 
             // Assert
             expect(
@@ -124,22 +125,22 @@ describe('ApplicationsService', () => {
             expect(result).toEqual(updatedApplication);
         });
 
-        it('should return undefined for non-existent application', () => {
+        it('should throw NotFoundException for non-existent application', async () => {
             // Arrange
-            mockDatabaseService.updateApplicationStatus.mockReturnValue(
-                undefined,
+            mockDatabaseService.updateApplicationStatus.mockResolvedValue(null);
+
+            // Act & Assert
+            await expect(service.updateStatus(999, 'accepted')).rejects.toThrow(
+                'Application with ID 999 not found',
             );
-
-            // Act
-            const result = service.updateStatus(999, 'accepted');
-
-            // Assert
-            expect(result).toBeUndefined();
+            expect(
+                mockDatabaseService.updateApplicationStatus,
+            ).toHaveBeenCalledWith(999, 'accepted');
         });
     });
 
     describe('applicationsBySitter', () => {
-        it('should return applications for a specific sitter', () => {
+        it('should return applications for a specific sitter', async () => {
             // Arrange
             const sitterId = 'sitter1';
             const mockApplications: Application[] = [
@@ -157,23 +158,23 @@ describe('ApplicationsService', () => {
                 },
             ];
 
-            mockDatabaseService.getApplicationsBySitter.mockReturnValue(
+            mockDatabaseService.getApplicationsWithListings.mockResolvedValue(
                 mockApplications,
             );
 
             // Act
-            const result = service.applicationsBySitter(sitterId);
+            const result = await service.applicationsBySitter(sitterId);
 
             // Assert
             expect(
-                mockDatabaseService.getApplicationsBySitter,
+                mockDatabaseService.getApplicationsWithListings,
             ).toHaveBeenCalledWith('sitter1');
             expect(result).toEqual(mockApplications);
         });
     });
 
     describe('applicationsByListing', () => {
-        it('should return applications for a specific listing', () => {
+        it('should return applications for a specific listing', async () => {
             // Arrange
             const listingId = 1;
             const mockApplications: Application[] = [
@@ -191,12 +192,12 @@ describe('ApplicationsService', () => {
                 },
             ];
 
-            mockDatabaseService.getApplicationsByListing.mockReturnValue(
+            mockDatabaseService.getApplicationsByListing.mockResolvedValue(
                 mockApplications,
             );
 
             // Act
-            const result = service.applicationsByListing(listingId);
+            const result = await service.applicationsByListing(listingId);
 
             // Assert
             expect(
