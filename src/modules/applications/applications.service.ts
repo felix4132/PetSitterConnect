@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import type { Application } from '../../domain/applications/application.entity.js';
 import { DatabaseService } from '../../infrastructure/database/database.service.js';
 
@@ -17,29 +17,39 @@ export class ApplicationsService {
         @Inject(DatabaseService) private readonly db: DatabaseService,
     ) {}
 
-    apply(dto: ApplyDto): Application | undefined {
-        const listing = this.db.getListing(dto.listingId);
+    async apply(dto: ApplyDto): Promise<Application> {
+        const listing = await this.db.getListing(dto.listingId);
         if (!listing) {
-            return undefined;
+            throw new NotFoundException(
+                `Listing with ID ${dto.listingId.toString()} not found`,
+            );
         }
-        return this.db.addApplication({
+        const application = await this.db.addApplication({
             listingId: dto.listingId,
             sitterId: dto.sitterId,
         });
+        return application;
     }
 
-    updateStatus(
+    async updateStatus(
         id: number,
         status: UpdateApplicationDto['status'],
-    ): Application | undefined {
-        return this.db.updateApplicationStatus(id, status);
+    ): Promise<Application> {
+        const application = await this.db.updateApplicationStatus(id, status);
+        if (!application) {
+            throw new NotFoundException(
+                `Application with ID ${id.toString()} not found`,
+            );
+        }
+        return application;
     }
 
-    applicationsBySitter(sitterId: string): Application[] {
-        return this.db.getApplicationsBySitter(sitterId);
+    async applicationsBySitter(sitterId: string): Promise<Application[]> {
+        // Optimized: Include listing relations instead of separate queries
+        return this.db.getApplicationsWithListings(sitterId);
     }
 
-    applicationsByListing(listingId: number): Application[] {
+    async applicationsByListing(listingId: number): Promise<Application[]> {
         return this.db.getApplicationsByListing(listingId);
     }
 }

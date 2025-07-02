@@ -108,12 +108,11 @@ describe('ApplicationsController (e2e)', () => {
     });
 
     it('handles invalid application IDs gracefully', async () => {
-        // Test updating non-existent application - returns empty object when undefined
-        const updateRes = await request(app.getHttpServer())
+        // Test updating non-existent application - should return 404
+        await request(app.getHttpServer())
             .patch('/applications/999999')
             .send({ status: 'accepted' })
-            .expect(200);
-        expect(updateRes.body).toEqual({});
+            .expect(404);
 
         // Test getting applications for non-existent sitter
         const noSitterApps = await request(app.getHttpServer())

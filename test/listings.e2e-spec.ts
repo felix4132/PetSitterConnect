@@ -149,4 +149,34 @@ describe('ListingsController (e2e)', () => {
             .expect(200);
         expect(Array.isArray(invalidBoolean.body)).toBe(true);
     });
+
+    it('should retrieve listing with applications', async () => {
+        // Create a listing
+        const createResponse = await request(app.getHttpServer())
+            .post('/listings')
+            .send(exampleListing)
+            .expect(201);
+
+        const listingId: number = createResponse.body.id as number;
+
+        // Create an application for this listing
+        await request(app.getHttpServer())
+            .post(`/listings/${listingId.toString()}/applications`)
+            .send({
+                sitterId: 'test-sitter-1',
+            })
+            .expect(201);
+
+        // Retrieve listing with applications
+        const response = await request(app.getHttpServer())
+            .get(`/listings/${listingId.toString()}/with-applications`)
+            .expect(200);
+
+        expect(response.body.id).toBe(listingId);
+        expect(response.body.title).toBe(exampleListing.title);
+        expect(Array.isArray(response.body.applications)).toBe(true);
+        expect(response.body.applications).toHaveLength(1);
+        expect(response.body.applications[0].sitterId).toBe('test-sitter-1');
+        expect(response.body.applications[0].status).toBe('pending');
+    });
 });
