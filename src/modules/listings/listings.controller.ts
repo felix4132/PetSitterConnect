@@ -3,12 +3,15 @@ import {
     Controller,
     Get,
     Inject,
+    NotFoundException,
     Param,
+    ParseIntPipe,
     Post,
     Query,
+    ValidationPipe,
 } from '@nestjs/common';
 import type { Listing } from '../../domain/listings/listing.entity.js';
-import type { CreateListingDto } from './listings.service.js';
+import { CreateListingDto } from './dto/create-listing.dto.js';
 import { ListingsService } from './listings.service.js';
 
 @Controller('listings')
@@ -19,12 +22,14 @@ export class ListingsController {
     ) {}
 
     @Post()
-    create(@Body() dto: CreateListingDto): Listing {
+    async create(
+        @Body(new ValidationPipe({ transform: true })) dto: CreateListingDto,
+    ): Promise<Listing> {
         return this.listingsService.create(dto);
     }
 
     @Get()
-    find(@Query() query: Record<string, string>): Listing[] {
+    async find(@Query() query: Record<string, string>): Promise<Listing[]> {
         // Parse query parameters to correct types
         const parsedQuery: Partial<Listing> = {};
 
@@ -68,13 +73,32 @@ export class ListingsController {
         return this.listingsService.findAll(parsedQuery);
     }
 
-    @Get(':id')
-    findOne(@Param('id') id: string): Listing | undefined {
-        return this.listingsService.findOne(parseInt(id, 10));
+    @Get(':id/with-applications')
+    async findOneWithApplications(
+        @Param('id', ParseIntPipe) id: number,
+    ): Promise<Listing> {
+        const listing = await this.listingsService.findOneWithApplications(id);
+        if (!listing) {
+            throw new NotFoundException(
+                `Listing with ID ${id.toString()} not found`,
+            );
+        }
+        return listing;
     }
 
-    @Get('/owner/:ownerId')
-    findByOwner(@Param('ownerId') ownerId: string): Listing[] {
+    @Get('owner/:ownerId')
+    async findByOwner(@Param('ownerId') ownerId: string): Promise<Listing[]> {
         return this.listingsService.findByOwner(ownerId);
+    }
+
+    @Get(':id')
+    async findOne(@Param('id', ParseIntPipe) id: number): Promise<Listing> {
+        const listing = await this.listingsService.findOne(id);
+        if (!listing) {
+            throw new NotFoundException(
+                `Listing with ID ${id.toString()} not found`,
+            );
+        }
+        return listing;
     }
 }

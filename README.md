@@ -1,278 +1,123 @@
 # PetSitterConnect Backend
 
-Ein moderner Backend-Server für die PetSitterConnect-Plattform,
-gebaut mit Nest.js, TypeScript und ESM.
+Modern backend server for a pet-sitting platform with REST API,
+TypeScript and comprehensive test coverage.
 
 ## 🚀 Features
 
-- **Modulare Architektur** - Saubere Trennung von Geschäftslogik und Infrastruktur
-- **TypeScript 5.8** - Vollständig typisiert mit strengen Einstellungen
-- **ESM (ES Modules)** - Moderne JavaScript-Module-Syntax
-- **Vitest** - Schnelles und modernes Testing-Framework
-- **SWC** - Schneller TypeScript/JavaScript-Compiler
-- **Rate Limiting** - Schutz vor zu vielen Anfragen
-- **CORS** - Konfigurierbare Cross-Origin Resource Sharing
-- **Validation** - Automatische Request-Validierung
-- **Security Headers** - Helmet für Sicherheits-Headers
+- **REST API** for listings and applications with optimized database access
+- **TypeScript 5.8** with strict typing
+- **TypeORM** with SQLite database and SQL-level filtering
+- **Validation** with class-validator/class-transformer
+- **Rate Limiting** and CORS protection
+- **Security** with Helmet (XSS, CSRF, etc.)
+- **Global Exception Handling** for better error handling
+- **>95% Test Coverage** (100% for Business Logic)
 
-## 🛠️ Technologie-Stack
+## 🛠️ Tech Stack
 
-- **Framework**: Nest.js 11
-- **Sprache**: TypeScript 5.8
-- **Runtime**: Node.js 22+
-- **Compiler**: SWC
-- **Testing**: Vitest 3
-- **Linting**: ESLint mit TypeScript-ESLint
-- **Formatierung**: Prettier
-- **Sicherheit**: Helmet, Rate Limiting, CORS
-- **Architektur**: Layered Architecture mit Domain-Driven Design
+- **Framework**: NestJS 11 + Express
+- **Language**: TypeScript 5.8 (ESM Module)
+- **Database**: TypeORM + SQLite
+- **Testing**: Vitest + Supertest
+- **Validation**: class-validator + class-transformer
+- **Security**: Helmet, Rate Limiting, CORS
+- **Code Quality**: ESLint + Prettier + strict TypeScript
 
-## 📋 Voraussetzungen
-
-- Node.js >= 22.16.0
-- npm >= 11.4.2
-
-## ⚡ Installation & Setup
+## ⚡ Quick Start
 
 ```bash
-# Repository klonen
-git clone <repository-url>
-cd PetSitterConnect
-
-# Dependencies installieren
+# Installation
 npm install
 
-# Environment-Datei erstellen (optional)
+# Environment Setup (optional)
 cp .env.example .env
-```
 
-## ⚙️ Konfiguration
-
-Der Server kann über Umgebungsvariablen konfiguriert werden.
-Diese können über eine `.env`-Datei im Projektverzeichnis definiert werden.
-
-Eine `.env.example`-Datei zeigt alle verfügbaren Optionen:
-
-```bash
-PORT=3000
-NODE_ENV=development
-API_PREFIX=api/v1
-API_VERSION=1.0.0
-RATE_LIMIT_TTL=60
-RATE_LIMIT_LIMIT=100
-# ... weitere Konfigurationen
-```
-
-## 🏗️ Projektstruktur
-
-```text
-src/
-├── app/
-│   ├── app.controller.ts
-│   ├── app.module.ts
-│   └── app.service.ts
-├── domain/
-│   ├── listings/
-│   │   └── listing.entity.ts
-│   └── applications/
-│       └── application.entity.ts
-├── infrastructure/
-│   └── database/
-│       ├── database.module.ts
-│       └── database.service.ts
-├── modules/
-│   ├── listings/
-│   │   ├── listings.controller.ts
-│   │   ├── listings.module.ts
-│   │   └── listings.service.ts
-│   └── applications/
-│       ├── applications.controller.ts
-│       ├── applications.module.ts
-│       └── applications.service.ts
-└── main.ts
-
-test/
-├── *.spec.ts            # Unit-Tests
-└── *.e2e-spec.ts        # E2E-Tests
-```
-
-## 🏛️ Architektur-Pattern
-
-Die Anwendung folgt einer **Layered Architecture** mit **Domain-Driven Design** Prinzipien:
-
-```text
-┌─────────────────────────────────────┐
-│            AppModule                │
-│  (Globale Konfiguration & Setup)    │
-├─────────────────────────────────────┤
-│  Feature Modules:                   │
-│  ├── ListingsModule                 │
-│  ├── ApplicationsModule             │
-│  └── DatabaseModule                 │
-├─────────────────────────────────────┤
-│  Controllers (HTTP Layer):          │
-│  ├── AppController                  │
-│  ├── ListingsController             │
-│  └── ApplicationsController         │
-├─────────────────────────────────────┤
-│  Services (Business Logic):         │
-│  ├── AppService                     │
-│  ├── ListingsService                │
-│  └── ApplicationsService            │
-├─────────────────────────────────────┤
-│  Domain Entities:                   │
-│  ├── Listing                        │
-│  └── Application                    │
-├─────────────────────────────────────┤
-│  Infrastructure Layer:              │
-│  └── DatabaseService                │
-└─────────────────────────────────────┘
-```
-
-### Schichten-Verantwortlichkeiten
-
-- **AppModule**: Zentraler Orchestrator für alle Module und globale Konfiguration
-- **Controller Layer**: HTTP-Request-Handling und Response-Formatting
-- **Service Layer**: Business-Logik und Datenverarbeitung
-- **Domain Layer**: Entitäten und Geschäftsregeln
-- **Infrastructure Layer**: Datenpersistierung und externe Services
-
-### Datenfluss
-
-```text
-HTTP Request → Controller → Service → Infrastructure → Domain
-     ↓              ↓          ↓            ↓           ↓
-HTTP Response ← Controller ← Service ← Infrastructure ← Domain
-```
-
-## 🏃‍♂️ Entwicklung
-
-```bash
-# Build erstellen
+# Build & Run
 npm run build
-
-# Entwicklungsserver starten
 npm run start:dev
 
-# Produktionsserver starten
-npm run start:prod
-```
-
-## 📚 API-Dokumentation
-
-Der Server läuft standardmäßig auf `http://localhost:3000/api/v1`
-
-### Listings
-
-- `POST /listings` – legt ein neues Inserat an
-- `GET /listings` – sucht nach Inseraten (mit Query-Parametern)
-- `GET /listings/:id` – ruft ein Inserat per ID ab
-- `GET /listings/owner/:ownerId` – zeigt alle Inserate eines Besitzers
-
-**Query-Parameter für `GET /listings`:**
-
-- `id`, `price`, `age` (Zahlen)
-- `sitterVerified` (boolean: `true`/`false`)
-- `ownerId`, `title`, `description`, `species`, `listingType`, `startDate`,
-  `endDate`, `breed`, `size`, `feeding`, `medication` (Strings)
-
-### Applications
-
-- `POST /listings/:id/applications` – bewirbt sich auf ein Inserat
-- `PATCH /applications/:id` – aktualisiert den Status einer Bewerbung
-- `GET /sitters/:sitterId/applications` – Bewerbungen eines Sitters
-- `GET /listings/:listingId/applications` – Bewerbungen zu einem Inserat
-
-## 🧪 Testing
-
-Das Projekt implementiert eine umfassende Test-Strategie mit
-**Unit Tests** und **End-to-End Tests**.
-
-### Test-Kategorien
-
-**Unit Tests** (`*.spec.ts`): Testen isolierter Komponenten ohne externe Dependencies
-
-- Sehr schnell (< 50ms pro Test)
-- Verwenden Mocks für Dependencies
-- Hohe Code-Coverage für Business Logic
-
-**End-to-End Tests** (`*.e2e-spec.ts`): Testen der gesamten Anwendung über HTTP-Requests
-
-- Starten komplette NestJS-Anwendung
-- Verwenden echte HTTP-Requests mit `supertest`
-- Testen End-to-End Workflows
-
-### Test-Ausführung
-
-```bash
-# Alle Tests ausführen
+# Testing
 npm test
-
-# Tests im Watch-Modus
-npm run test:watch
-
-# E2E Tests
-npm run test:e2e
-
-# Coverage Report
 npm run test:cov
 
-# Tests einmalig ausführen (CI)
-npm run test:run
-```
-
-### Coverage-Ergebnisse
-
-- **Branches**: 96.96% ✅
-- **Functions**: 100% ✅
-- **Lines**: 100% ✅
-- **Statements**: 100% ✅
-
-**Aktuelle Gesamt-Coverage: 100%** 🎉
-
-## 📝 Code-Qualität
-
-```bash
-# Code formatieren
-npm run format
-
-# Code-Format überprüfen (CI)
-npm run format:check
-
-# Linting
-npm run lint
-
-# Linting überprüfen (CI)
+# Code Quality
 npm run lint:check
-
-# TypeScript-Typen überprüfen
+npm run format:check
 npm run typecheck
 ```
 
-## 🚀 Deployment
+Server runs on: `http://localhost:3000/api/v1`
 
-```bash
-# Build erstellen
-npm run build
+## 📚 API Endpoints
 
-# Produktions-Dependencies installieren
-npm ci --only=production
+### Listings
 
-# Server starten
-npm run start:prod
+```http
+POST   /listings                            # Create listing
+GET    /listings                            # Search listings (with filters)
+GET    /listings/:id                        # Get listing
+GET    /listings/:id/with-applications      # Get listing with applications (optimized)
+GET    /listings/owner/:ownerId             # Get listings by owner
 ```
 
-### Umgebungsvariablen für Produktion
+### Applications
 
-Stellen Sie sicher, dass folgende Variablen in der Produktionsumgebung gesetzt sind:
+```http
+POST   /listings/:listingId/applications    # Submit application
+PATCH  /applications/:id                    # Update status
+GET    /sitters/:sitterId/applications      # Get applications by sitter
+GET    /listings/:listingId/applications    # Get applications for listing
+```
+
+## 🧪 Testing
+
+- **123 Tests** (Unit + E2E + Integration + DTO Validation)
+- **>95% Coverage** overall
+- **100% Coverage** for Controllers, Services, Database
+- **Comprehensive E2E Tests** for CORS, Rate Limiting, APIs
+- **DTO Validation Tests** for all input parameters
+- **Exception Handling Tests** for robust error handling
+- **Optimized Database Tests** for SQL-level filtering
 
 ```bash
-NODE_ENV=production
+npm test              # All tests
+npm run test:cov      # With coverage report
+npm run test:e2e      # E2E tests only
+npm run test:watch    # Watch mode for development
+```
+
+## 🏗️ Project Structure
+
+```text
+src/
+├── app/              # Main application module and configuration
+├── common/           # Shared utilities and components
+├── domain/           # Database entities and models
+├── infrastructure/   # Database configuration and services
+└── modules/          # Business logic modules
+    ├── listings/     # Listing management
+    └── applications/ # Application workflow
+```
+
+## ⚙️ Configuration
+
+### 🔧 Environment Variables
+
+Copy `.env.example` to `.env` and adjust the values:
+
+```bash
+# Server Configuration
 PORT=3000
+NODE_ENV=development
 API_PREFIX=api/v1
-API_VERSION=1.0.0
-ALLOWED_ORIGINS=https://your-frontend-domain.com
+
+# Security & Rate Limiting
 RATE_LIMIT_TTL=60
 RATE_LIMIT_LIMIT=100
-LOG_LEVEL=warn
+ALLOWED_ORIGINS=http://localhost:3000
+
+# Logging
+LOG_LEVEL=debug
+API_VERSION=2025.06.1
 ```

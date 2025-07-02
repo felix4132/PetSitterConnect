@@ -1,58 +1,113 @@
 import { Injectable } from '@nestjs/common';
-import type { Application } from '../../domain/applications/application.entity.js';
-import type { Listing } from '../../domain/listings/listing.entity.js';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository, type FindOptionsWhere } from 'typeorm';
+import { Application } from '../../domain/applications/application.entity.js';
+import { Listing } from '../../domain/listings/listing.entity.js';
 
 @Injectable()
 export class DatabaseService {
-    private listings: Listing[] = [];
-    private applications: Application[] = [];
-    private listingIdCounter = 1;
-    private applicationIdCounter = 1;
+    constructor(
+        @InjectRepository(Listing)
+        private readonly listingRepository: Repository<Listing>,
+        @InjectRepository(Application)
+        private readonly applicationRepository: Repository<Application>,
+    ) {}
 
-    addListing(listing: Omit<Listing, 'id'>): Listing {
-        const newListing: Listing = { id: this.listingIdCounter++, ...listing };
-        this.listings.push(newListing);
-        return newListing;
+    // Optimized: Direct repository queries with database-level filtering
+    async getListingsWithFilters(
+        filters?: Partial<Listing>,
+    ): Promise<Listing[]> {
+        const whereConditions: FindOptionsWhere<Listing> = {};
+
+        if (filters) {
+            // Build database-level WHERE conditions
+            Object.entries(filters).forEach(([key, value]) => {
+                (whereConditions as Record<string, unknown>)[key] = value;
+            });
+        }
+
+        return this.listingRepository.find({
+            where: whereConditions,
+            order: { id: 'DESC' }, // Most recent first
+            take: 100, // Pagination limit
+        });
     }
 
-    getListing(id: number): Listing | undefined {
-        return this.listings.find((l) => l.id === id);
+    // Optimized: Direct database query instead of load-all + filter
+    async getListingsByOwner(ownerId: string): Promise<Listing[]> {
+        return this.listingRepository.find({
+            where: { ownerId },
+            order: { id: 'DESC' },
+        });
     }
 
-    getListings(): Listing[] {
-        return this.listings;
+    // Optimized: With relations for better performance
+    async getListingWithApplications(id: number): Promise<Listing | null> {
+        return this.listingRepository.findOne({
+            where: { id },
+            relations: ['applications'], // Eager load applications
+        });
     }
 
-    addApplication(app: Omit<Application, 'id' | 'status'>): Application {
-        const newApp: Application = {
-            id: this.applicationIdCounter++,
-            status: 'pending',
+    // Optimized: Bulk operations with relations
+    async getApplicationsWithListings(
+        sitterId: string,
+    ): Promise<Application[]> {
+        return this.applicationRepository.find({
+            where: { sitterId },
+            relations: ['listing'], // Include listing data
+            order: { id: 'DESC' },
+        });
+    }
+
+    async addListing(listing: Omit<Listing, 'id'>): Promise<Listing> {
+        const newListing = this.listingRepository.create(listing);
+        return this.listingRepository.save(newListing);
+    }
+
+    async getListing(id: number): Promise<Listing | null> {
+        return this.listingRepository.findOneBy({ id });
+    }
+
+    // LEGACY: Basic method without optimizations - use getListingsWithFilters() instead
+    async getListings(): Promise<Listing[]> {
+        return this.listingRepository.find({
+            take: 100,
+            order: { id: 'DESC' },
+        });
+    }
+
+    async addApplication(
+        app: Omit<Application, 'id' | 'status'>,
+    ): Promise<Application> {
+        const newApp = this.applicationRepository.create({
             ...app,
-        };
-        this.applications.push(newApp);
-        return newApp;
+            status: 'pending',
+        });
+        return this.applicationRepository.save(newApp);
     }
 
-    getApplication(id: number): Application | undefined {
-        return this.applications.find((a) => a.id === id);
+    async getApplication(id: number): Promise<Application | null> {
+        return this.applicationRepository.findOneBy({ id });
     }
 
-    updateApplicationStatus(
+    async updateApplicationStatus(
         id: number,
         status: Application['status'],
-    ): Application | undefined {
-        const application = this.getApplication(id);
+    ): Promise<Application | null> {
+        const application = await this.getApplication(id);
         if (application) {
             application.status = status;
+            return this.applicationRepository.save(application);
         }
-        return application;
+        return null;
     }
 
-    getApplicationsBySitter(sitterId: string): Application[] {
-        return this.applications.filter((a) => a.sitterId === sitterId);
+    async getApplicationsBySitter(sitterId: string): Promise<Application[]> {
+        return this.applicationRepository.findBy({ sitterId });
     }
 
-    getApplicationsByListing(listingId: number): Application[] {
-        return this.applications.filter((a) => a.listingId === listingId);
+    async getApplicationsByListing(listingId: number): Promise<Application[]> {
+        return this.applicationRepository.findBy({ listingId });
     }
 }

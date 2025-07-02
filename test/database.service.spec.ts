@@ -1,17 +1,54 @@
-import { beforeEach, describe, expect, it } from 'vitest';
-import type { Listing } from '../src/domain/listings/listing.entity.ts';
-import { DatabaseService } from '../src/infrastructure/database/database.service.ts';
+import { Test, TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { Application } from '../src/domain/applications/application.entity.js';
+import { Listing } from '../src/domain/listings/listing.entity.js';
+import { DatabaseService } from '../src/infrastructure/database/database.service.js';
 
 describe('DatabaseService', () => {
     let service: DatabaseService;
+    let listingRepository: Repository<Listing>;
+    let applicationRepository: Repository<Application>;
 
-    beforeEach(() => {
-        service = new DatabaseService();
+    beforeEach(async () => {
+        const module: TestingModule = await Test.createTestingModule({
+            providers: [
+                DatabaseService,
+                {
+                    provide: getRepositoryToken(Listing),
+                    useValue: {
+                        create: vi.fn(),
+                        save: vi.fn(),
+                        findOneBy: vi.fn(),
+                        find: vi.fn(),
+                        findOne: vi.fn(),
+                    },
+                },
+                {
+                    provide: getRepositoryToken(Application),
+                    useValue: {
+                        create: vi.fn(),
+                        save: vi.fn(),
+                        findOneBy: vi.fn(),
+                        findBy: vi.fn(),
+                    },
+                },
+            ],
+        }).compile();
+
+        service = module.get<DatabaseService>(DatabaseService);
+        listingRepository = module.get<Repository<Listing>>(
+            getRepositoryToken(Listing),
+        );
+        applicationRepository = module.get<Repository<Application>>(
+            getRepositoryToken(Application),
+        );
     });
 
     describe('Listings', () => {
         describe('addListing', () => {
-            it('should add a new listing with auto-incremented id', () => {
+            it('should add a new listing', async () => {
                 // Arrange
                 const listingData = {
                     ownerId: 'owner1',
@@ -29,48 +66,34 @@ describe('DatabaseService', () => {
                     feeding: 'twice a day',
                     medication: 'none',
                 };
+                const expectedListing = { id: 1, ...listingData };
+
+                const createSpy = vi
+                    .fn()
+                    .mockReturnValue(expectedListing as any);
+                const saveSpy = vi
+                    .fn()
+                    .mockResolvedValue(expectedListing as any);
+
+                listingRepository.create = createSpy;
+                listingRepository.save = saveSpy;
 
                 // Act
-                const result = service.addListing(listingData);
+                const result = await service.addListing(listingData);
 
                 // Assert
-                expect(result.id).toBe(1);
-                expect(result).toEqual({ id: 1, ...listingData });
-            });
-
-            it('should increment id for multiple listings', () => {
-                // Arrange
-                const listingData = {
-                    ownerId: 'owner1',
-                    title: 'Test Listing',
-                    description: 'test desc',
-                    species: 'dog' as const,
-                    listingType: 'house-sitting' as const,
-                    startDate: '2025-07-01',
-                    endDate: '2025-07-02',
-                    sitterVerified: false,
-                    price: 10,
-                    breed: 'Bulldog',
-                    age: 3,
-                    size: 'medium',
-                    feeding: 'twice a day',
-                    medication: 'none',
-                };
-
-                // Act
-                const first = service.addListing(listingData);
-                const second = service.addListing(listingData);
-
-                // Assert
-                expect(first.id).toBe(1);
-                expect(second.id).toBe(2);
+                expect(createSpy).toHaveBeenCalledWith(listingData);
+                expect(saveSpy).toHaveBeenCalled();
+                expect(result).toEqual(expectedListing);
             });
         });
 
         describe('getListing', () => {
-            it('should return listing by id', () => {
+            it('should return listing by id', async () => {
                 // Arrange
-                const listingData = {
+                const listingId = 1;
+                const mockListing = {
+                    id: 1,
                     ownerId: 'owner1',
                     title: 'Test Listing',
                     description: 'test desc',
@@ -86,31 +109,206 @@ describe('DatabaseService', () => {
                     feeding: 'twice a day',
                     medication: 'none',
                 };
-                const addedListing = service.addListing(listingData);
+
+                const findOneBySpyResult = vi
+                    .fn()
+                    .mockResolvedValue(mockListing as any);
+                listingRepository.findOneBy = findOneBySpyResult;
 
                 // Act
-                const result = service.getListing(addedListing.id);
+                const result = await service.getListing(listingId);
 
                 // Assert
-                expect(result).toEqual(addedListing);
+                expect(findOneBySpyResult).toHaveBeenCalledWith({
+                    id: listingId,
+                });
+                expect(result).toEqual(mockListing);
             });
 
-            it('should return undefined for non-existent listing', () => {
+            it('should return null for non-existent listing', async () => {
+                // Arrange
+                const findOneBySpyResult = vi.fn().mockResolvedValue(null);
+                listingRepository.findOneBy = findOneBySpyResult;
+
                 // Act
-                const result = service.getListing(999);
+                const result = await service.getListing(999);
 
                 // Assert
-                expect(result).toBeUndefined();
+                expect(result).toBeNull();
             });
         });
 
         describe('getListings', () => {
-            it('should return all listings', () => {
+            it('should return all listings with pagination', async () => {
                 // Arrange
-                const listingData1 = {
+                const mockListings = [
+                    {
+                        id: 1,
+                        ownerId: 'owner1',
+                        title: 'Test Listing 1',
+                        description: 'test desc 1',
+                        species: 'dog' as const,
+                        listingType: 'house-sitting' as const,
+                        startDate: '2025-07-01',
+                        endDate: '2025-07-02',
+                        sitterVerified: false,
+                        price: 10,
+                        breed: 'Bulldog',
+                        age: 3,
+                        size: 'medium',
+                        feeding: 'twice a day',
+                        medication: 'none',
+                    },
+                ];
+
+                const findSpyResult = vi
+                    .fn()
+                    .mockResolvedValue(mockListings as any);
+                listingRepository.find = findSpyResult;
+
+                // Act
+                const result = await service.getListings();
+
+                // Assert
+                expect(findSpyResult).toHaveBeenCalledWith({
+                    take: 100,
+                    order: { id: 'DESC' },
+                });
+                expect(result).toEqual(mockListings);
+            });
+        });
+
+        describe('getListingsWithFilters', () => {
+            it('should return filtered listings with database-level filtering', async () => {
+                // Arrange
+                const filters = { species: 'dog' as const, price: 10 };
+                const mockListings = [
+                    {
+                        id: 1,
+                        ownerId: 'owner1',
+                        title: 'Dog Listing',
+                        description: 'test desc',
+                        species: 'dog' as const,
+                        listingType: 'house-sitting' as const,
+                        startDate: '2025-07-01',
+                        endDate: '2025-07-02',
+                        sitterVerified: false,
+                        price: 10,
+                        breed: 'Bulldog',
+                        age: 3,
+                        size: 'medium',
+                        feeding: 'twice a day',
+                        medication: 'none',
+                    },
+                ];
+
+                const findSpyResult = vi
+                    .fn()
+                    .mockResolvedValue(mockListings as any);
+                listingRepository.find = findSpyResult;
+
+                // Act
+                const result = await service.getListingsWithFilters(filters);
+
+                // Assert
+                expect(findSpyResult).toHaveBeenCalledWith({
+                    where: filters,
+                    order: { id: 'DESC' },
+                    take: 100,
+                });
+                expect(result).toEqual(mockListings);
+            });
+
+            it('should return all listings when no filters provided', async () => {
+                // Arrange
+                const mockListings = [
+                    {
+                        id: 1,
+                        ownerId: 'owner1',
+                        title: 'Test Listing',
+                        description: 'test desc',
+                        species: 'dog' as const,
+                        listingType: 'house-sitting' as const,
+                        startDate: '2025-07-01',
+                        endDate: '2025-07-02',
+                        sitterVerified: false,
+                        price: 10,
+                        breed: 'Bulldog',
+                        age: 3,
+                        size: 'medium',
+                        feeding: 'twice a day',
+                        medication: 'none',
+                    },
+                ];
+
+                const findSpyResult = vi
+                    .fn()
+                    .mockResolvedValue(mockListings as any);
+                listingRepository.find = findSpyResult;
+
+                // Act
+                const result = await service.getListingsWithFilters();
+
+                // Assert
+                expect(findSpyResult).toHaveBeenCalledWith({
+                    where: {},
+                    order: { id: 'DESC' },
+                    take: 100,
+                });
+                expect(result).toEqual(mockListings);
+            });
+        });
+
+        describe('getListingsByOwner', () => {
+            it('should return listings for specific owner with database filtering', async () => {
+                // Arrange
+                const ownerId = 'owner1';
+                const mockListings = [
+                    {
+                        id: 1,
+                        ownerId: 'owner1',
+                        title: 'Owner Listing',
+                        description: 'test desc',
+                        species: 'dog' as const,
+                        listingType: 'house-sitting' as const,
+                        startDate: '2025-07-01',
+                        endDate: '2025-07-02',
+                        sitterVerified: false,
+                        price: 10,
+                        breed: 'Bulldog',
+                        age: 3,
+                        size: 'medium',
+                        feeding: 'twice a day',
+                        medication: 'none',
+                    },
+                ];
+
+                const findSpyResult = vi
+                    .fn()
+                    .mockResolvedValue(mockListings as any);
+                listingRepository.find = findSpyResult;
+
+                // Act
+                const result = await service.getListingsByOwner(ownerId);
+
+                // Assert
+                expect(findSpyResult).toHaveBeenCalledWith({
+                    where: { ownerId },
+                    order: { id: 'DESC' },
+                });
+                expect(result).toEqual(mockListings);
+            });
+        });
+
+        describe('getListingWithApplications', () => {
+            it('should return listing with related applications', async () => {
+                // Arrange
+                const listingId = 1;
+                const mockListing = {
+                    id: 1,
                     ownerId: 'owner1',
-                    title: 'Test Listing 1',
-                    description: 'test desc 1',
+                    title: 'Test Listing',
+                    description: 'test desc',
                     species: 'dog' as const,
                     listingType: 'house-sitting' as const,
                     startDate: '2025-07-01',
@@ -122,234 +320,244 @@ describe('DatabaseService', () => {
                     size: 'medium',
                     feeding: 'twice a day',
                     medication: 'none',
-                };
-                const listingData2 = {
-                    ...listingData1,
-                    title: 'Test Listing 2',
-                    ownerId: 'owner2',
+                    applications: [
+                        {
+                            id: 1,
+                            listingId: 1,
+                            sitterId: 'sitter1',
+                            status: 'pending' as const,
+                        },
+                    ],
                 };
 
-                const listing1 = service.addListing(listingData1);
-                const listing2 = service.addListing(listingData2);
+                const findOneSpyResult = vi
+                    .fn()
+                    .mockResolvedValue(mockListing as any);
+                listingRepository.findOne = findOneSpyResult;
 
                 // Act
-                const result = service.getListings();
+                const result =
+                    await service.getListingWithApplications(listingId);
 
                 // Assert
-                expect(result).toHaveLength(2);
-                expect(result).toContain(listing1);
-                expect(result).toContain(listing2);
+                expect(findOneSpyResult).toHaveBeenCalledWith({
+                    where: { id: listingId },
+                    relations: ['applications'],
+                });
+                expect(result).toEqual(mockListing);
             });
 
-            it('should return empty array when no listings', () => {
+            it('should return null for non-existent listing', async () => {
+                // Arrange
+                const findOneSpyResult = vi.fn().mockResolvedValue(null);
+                listingRepository.findOne = findOneSpyResult;
+
                 // Act
-                const result = service.getListings();
+                const result = await service.getListingWithApplications(999);
 
                 // Assert
-                expect(result).toEqual([]);
+                expect(result).toBeNull();
             });
         });
     });
 
     describe('Applications', () => {
-        let testListing: Listing;
-
-        beforeEach(() => {
-            // Add a test listing first
-            testListing = service.addListing({
-                ownerId: 'owner1',
-                title: 'Test Listing',
-                description: 'test desc',
-                species: 'dog',
-                listingType: 'house-sitting',
-                startDate: '2025-07-01',
-                endDate: '2025-07-02',
-                sitterVerified: false,
-                price: 10,
-                breed: 'Bulldog',
-                age: 3,
-                size: 'medium',
-                feeding: 'twice a day',
-                medication: 'none',
-            });
-        });
-
-        describe('addApplication', () => {
-            it('should add a new application with auto-incremented id and pending status', () => {
+        describe('getApplicationsWithListings', () => {
+            it('should return applications with related listing data', async () => {
                 // Arrange
-                const applicationData = {
-                    listingId: testListing.id,
-                    sitterId: 'sitter1',
-                };
+                const sitterId = 'sitter1';
+                const mockApplications = [
+                    {
+                        id: 1,
+                        listingId: 1,
+                        sitterId: 'sitter1',
+                        status: 'pending' as const,
+                        listing: {
+                            id: 1,
+                            ownerId: 'owner1',
+                            title: 'Test Listing',
+                            description: 'test desc',
+                            species: 'dog' as const,
+                            listingType: 'house-sitting' as const,
+                            startDate: '2025-07-01',
+                            endDate: '2025-07-02',
+                            sitterVerified: false,
+                            price: 10,
+                            breed: 'Bulldog',
+                            age: 3,
+                            size: 'medium',
+                            feeding: 'twice a day',
+                            medication: 'none',
+                        },
+                    },
+                ];
+
+                const findSpyResult = vi
+                    .fn()
+                    .mockResolvedValue(mockApplications as any);
+                applicationRepository.find = findSpyResult;
 
                 // Act
-                const result = service.addApplication(applicationData);
+                const result =
+                    await service.getApplicationsWithListings(sitterId);
 
                 // Assert
-                expect(result.id).toBe(1);
-                expect(result.status).toBe('pending');
-                expect(result.listingId).toBe(testListing.id);
-                expect(result.sitterId).toBe('sitter1');
-            });
-
-            it('should increment id for multiple applications', () => {
-                // Arrange
-                const applicationData = {
-                    listingId: testListing.id,
-                    sitterId: 'sitter1',
-                };
-
-                // Act
-                const first = service.addApplication(applicationData);
-                const second = service.addApplication({
-                    ...applicationData,
-                    sitterId: 'sitter2',
+                expect(findSpyResult).toHaveBeenCalledWith({
+                    where: { sitterId },
+                    relations: ['listing'],
+                    order: { id: 'DESC' },
                 });
-
-                // Assert
-                expect(first.id).toBe(1);
-                expect(second.id).toBe(2);
+                expect(result).toEqual(mockApplications);
             });
         });
-
-        describe('getApplication', () => {
-            it('should return application by id', () => {
+        describe('addApplication', () => {
+            it('should add a new application', async () => {
                 // Arrange
                 const applicationData = {
-                    listingId: testListing.id,
+                    listingId: 1,
                     sitterId: 'sitter1',
                 };
-                const addedApplication =
-                    service.addApplication(applicationData);
+                const expectedApplication = {
+                    id: 1,
+                    status: 'pending',
+                    ...applicationData,
+                };
+
+                const createSpyResult = vi
+                    .fn()
+                    .mockReturnValue(expectedApplication as any);
+                const saveSpyResult = vi
+                    .fn()
+                    .mockResolvedValue(expectedApplication as any);
+
+                applicationRepository.create = createSpyResult;
+                applicationRepository.save = saveSpyResult;
 
                 // Act
-                const result = service.getApplication(addedApplication.id);
+                const result = await service.addApplication(applicationData);
 
                 // Assert
-                expect(result).toEqual(addedApplication);
-            });
-
-            it('should return undefined for non-existent application', () => {
-                // Act
-                const result = service.getApplication(999);
-
-                // Assert
-                expect(result).toBeUndefined();
+                expect(createSpyResult).toHaveBeenCalledWith({
+                    ...applicationData,
+                    status: 'pending',
+                });
+                expect(saveSpyResult).toHaveBeenCalled();
+                expect(result).toEqual(expectedApplication);
             });
         });
 
         describe('updateApplicationStatus', () => {
-            it('should update application status', () => {
+            it('should update application status', async () => {
                 // Arrange
-                const applicationData = {
-                    listingId: testListing.id,
+                const applicationId = 1;
+                const newStatus = 'accepted';
+                const application = {
+                    id: 1,
+                    listingId: 1,
                     sitterId: 'sitter1',
+                    status: 'pending' as const,
                 };
-                const application = service.addApplication(applicationData);
+                const updatedApplication = {
+                    ...application,
+                    status: newStatus,
+                };
+
+                const findOneBySpyResult = vi
+                    .fn()
+                    .mockResolvedValue(application as any);
+                const saveSpyResult = vi
+                    .fn()
+                    .mockResolvedValue(updatedApplication as any);
+
+                applicationRepository.findOneBy = findOneBySpyResult;
+                applicationRepository.save = saveSpyResult;
 
                 // Act
-                const result = service.updateApplicationStatus(
-                    application.id,
+                const result = await service.updateApplicationStatus(
+                    applicationId,
+                    newStatus,
+                );
+
+                // Assert
+                expect(findOneBySpyResult).toHaveBeenCalledWith({
+                    id: applicationId,
+                });
+                expect(saveSpyResult).toHaveBeenCalledWith(updatedApplication);
+                expect(result?.status).toBe(newStatus);
+            });
+
+            it('should return null for non-existent application', async () => {
+                // Arrange
+                const findOneBySpyResult = vi.fn().mockResolvedValue(null);
+                applicationRepository.findOneBy = findOneBySpyResult;
+
+                // Act
+                const result = await service.updateApplicationStatus(
+                    999,
                     'accepted',
                 );
 
                 // Assert
-                expect(result?.status).toBe('accepted');
-                expect(result?.id).toBe(application.id);
-            });
-
-            it('should return undefined for non-existent application', () => {
-                // Act
-                const result = service.updateApplicationStatus(999, 'accepted');
-
-                // Assert
-                expect(result).toBeUndefined();
+                expect(result).toBeNull();
             });
         });
 
         describe('getApplicationsBySitter', () => {
-            it('should return applications for specific sitter', () => {
+            it('should return applications for specific sitter', async () => {
                 // Arrange
-                const app1 = service.addApplication({
-                    listingId: testListing.id,
-                    sitterId: 'sitter1',
-                });
-                service.addApplication({
-                    listingId: testListing.id,
-                    sitterId: 'sitter2',
-                });
-                const app3 = service.addApplication({
-                    listingId: testListing.id,
-                    sitterId: 'sitter1',
-                });
+                const sitterId = 'sitter1';
+                const mockApplications = [
+                    {
+                        id: 1,
+                        listingId: 1,
+                        sitterId: 'sitter1',
+                        status: 'pending' as const,
+                    },
+                ];
+
+                const findBySpyResult = vi
+                    .fn()
+                    .mockResolvedValue(mockApplications as any);
+                applicationRepository.findBy = findBySpyResult;
 
                 // Act
-                const result = service.getApplicationsBySitter('sitter1');
+                const result = await service.getApplicationsBySitter(sitterId);
 
                 // Assert
-                expect(result).toHaveLength(2);
-                expect(result).toContain(app1);
-                expect(result).toContain(app3);
-            });
-
-            it('should return empty array for sitter with no applications', () => {
-                // Act
-                const result =
-                    service.getApplicationsBySitter('nonexistent-sitter');
-
-                // Assert
-                expect(result).toEqual([]);
+                expect(findBySpyResult).toHaveBeenCalledWith({
+                    sitterId,
+                });
+                expect(result).toEqual(mockApplications);
             });
         });
 
         describe('getApplicationsByListing', () => {
-            it('should return applications for specific listing', () => {
+            it('should return applications for specific listing', async () => {
                 // Arrange
-                const listing2 = service.addListing({
-                    ownerId: 'owner2',
-                    title: 'Test Listing 2',
-                    description: 'test desc 2',
-                    species: 'cat',
-                    listingType: 'day-care',
-                    startDate: '2025-08-01',
-                    endDate: '2025-08-02',
-                    sitterVerified: true,
-                    price: 20,
-                    breed: 'Siamese',
-                    age: 2,
-                    size: 'small',
-                    feeding: 'once',
-                    medication: 'none',
-                });
+                const listingId = 1;
+                const mockApplications = [
+                    {
+                        id: 1,
+                        listingId: 1,
+                        sitterId: 'sitter1',
+                        status: 'pending' as const,
+                    },
+                ];
 
-                const app1 = service.addApplication({
-                    listingId: testListing.id,
-                    sitterId: 'sitter1',
-                });
-                service.addApplication({
-                    listingId: listing2.id,
-                    sitterId: 'sitter2',
-                });
-                const app3 = service.addApplication({
-                    listingId: testListing.id,
-                    sitterId: 'sitter3',
-                });
+                const findBySpyResult = vi
+                    .fn()
+                    .mockResolvedValue(mockApplications as any);
+                applicationRepository.findBy = findBySpyResult;
 
                 // Act
-                const result = service.getApplicationsByListing(testListing.id);
+                const result =
+                    await service.getApplicationsByListing(listingId);
 
                 // Assert
-                expect(result).toHaveLength(2);
-                expect(result).toContain(app1);
-                expect(result).toContain(app3);
-            });
-
-            it('should return empty array for listing with no applications', () => {
-                // Act
-                const result = service.getApplicationsByListing(999);
-
-                // Assert
-                expect(result).toEqual([]);
+                expect(findBySpyResult).toHaveBeenCalledWith({
+                    listingId,
+                });
+                expect(result).toEqual(mockApplications);
             });
         });
     });

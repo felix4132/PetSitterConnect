@@ -1,23 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type { Listing } from '../../domain/listings/listing.entity.js';
 import { DatabaseService } from '../../infrastructure/database/database.service.js';
-
-export interface CreateListingDto {
-    ownerId: string;
-    title: string;
-    description: string;
-    species: 'dog' | 'cat' | 'bird' | 'exotic';
-    listingType: 'house-sitting' | 'drop-in-visit' | 'day-care';
-    startDate: string;
-    endDate: string;
-    sitterVerified: boolean;
-    price: number;
-    breed: string;
-    age: number;
-    size: string;
-    feeding: string;
-    medication: string;
-}
+import { CreateListingDto } from './dto/create-listing.dto.js';
 
 @Injectable()
 export class ListingsService {
@@ -25,30 +9,46 @@ export class ListingsService {
         @Inject(DatabaseService) private readonly db: DatabaseService,
     ) {}
 
-    create(dto: CreateListingDto): Listing {
-        return this.db.addListing(dto);
+    async create(dto: CreateListingDto): Promise<Listing> {
+        const listingData: Omit<Listing, 'id'> = {
+            ownerId: dto.ownerId,
+            title: dto.title,
+            description: dto.description,
+            species: dto.species,
+            listingType: dto.listingType,
+            startDate: dto.startDate,
+            endDate: dto.endDate,
+            sitterVerified: dto.sitterVerified || false,
+            price: dto.price,
+            breed: dto.breed,
+            age: dto.age,
+            size: dto.size,
+            feeding: dto.feeding,
+            medication: dto.medication,
+        };
+        return this.db.addListing(listingData);
     }
 
-    findAll(filters?: Partial<Listing>): Listing[] {
-        let listings = this.db.getListings();
-        if (filters) {
-            listings = listings.filter((listing) => {
-                return (Object.keys(filters) as (keyof Listing)[]).every(
-                    (key) => {
-                        const value = filters[key];
-                        return value === undefined || listing[key] === value;
-                    },
-                );
-            });
+    async findAll(filters?: Partial<Listing>): Promise<Listing[]> {
+        // Optimized: Direct database query instead of load-all + JS-filter
+        if (filters && Object.keys(filters).length > 0) {
+            return this.db.getListingsWithFilters(filters);
         }
-        return listings;
+        // Use optimized method with pagination when no filters
+        return this.db.getListingsWithFilters();
     }
 
-    findByOwner(ownerId: string): Listing[] {
-        return this.db.getListings().filter((l) => l.ownerId === ownerId);
+    async findByOwner(ownerId: string): Promise<Listing[]> {
+        // Optimized: Direct WHERE query instead of load-all + filter
+        return this.db.getListingsByOwner(ownerId);
     }
 
-    findOne(id: number): Listing | undefined {
+    async findOne(id: number): Promise<Listing | null> {
         return this.db.getListing(id);
+    }
+
+    async findOneWithApplications(id: number): Promise<Listing | null> {
+        // Optimized: Load listing with applications in single query
+        return this.db.getListingWithApplications(id);
     }
 }

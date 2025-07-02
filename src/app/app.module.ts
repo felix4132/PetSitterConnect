@@ -1,7 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { GlobalExceptionFilter } from '../common/filters/global-exception.filter.js';
 import { DatabaseModule } from '../infrastructure/database/database.module.js';
 import { ApplicationsModule } from '../modules/applications/applications.module.js';
 import { ListingsModule } from '../modules/listings/listings.module.js';
@@ -42,6 +43,10 @@ import { AppService } from './app.service.js';
         {
             provide: APP_GUARD,
             useClass: ThrottlerGuard,
+        },
+        {
+            provide: APP_FILTER,
+            useClass: GlobalExceptionFilter,
         },
     ],
 })
