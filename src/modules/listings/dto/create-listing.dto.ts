@@ -25,7 +25,9 @@ export class CreateListingDto {
     @IsNotEmpty()
     description!: string;
 
-    @IsEnum(['dog', 'cat', 'bird', 'exotic', 'other'])
+    @IsEnum(['dog', 'cat', 'bird', 'exotic', 'other'], {
+        message: 'species must be one of: dog, cat, bird, exotic, other',
+    })
     species!: 'dog' | 'cat' | 'bird' | 'exotic' | 'other';
 
     @IsArray()
@@ -40,7 +42,11 @@ export class CreateListingDto {
             'feeding',
             'overnight',
         ],
-        { each: true },
+        {
+            each: true,
+            message:
+                'each listingType must be one of: house-sitting, drop-in-visit, day-care, walks, feeding, overnight',
+        },
     )
     listingType!: Array<
         | 'house-sitting'

@@ -18,7 +18,11 @@ export class Application {
     @Column('varchar')
     sitterId!: string;
 
-    @Column('varchar', { default: 'pending' })
+    @Column({
+        type: 'varchar',
+        default: 'pending',
+        enum: ['pending', 'accepted', 'rejected'],
+    })
     status!: 'pending' | 'accepted' | 'rejected';
 
     @ManyToOne(() => Listing, (listing) => listing.applications, {

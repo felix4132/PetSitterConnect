@@ -72,7 +72,7 @@ GET    /listings/:listingId/applications    # Get applications for listing
 
 ## 🧪 Testing
 
-- **192 Tests** (Unit + E2E + Integration + DTO Validation + Complex Scenarios)
+- **212 Tests** (Unit + E2E + Integration + DTO Validation + Complex Scenarios)
 - **Comprehensive E2E Tests** for CORS, Rate Limiting, APIs
 - **Complex Integration Tests** for multi-step workflows
 - **DTO Validation Tests** for all input parameters
@@ -94,7 +94,8 @@ src/
 ├── main.ts           # Application entry point
 ├── app/              # Main application module and configuration
 ├── common/           # Shared utilities and components
-│   └── filters/      # Global exception filters
+│   ├── filters/      # Global exception filters
+│   └── validators/   # Custom validation classes
 ├── domain/           # Database entities and models
 │   ├── applications/ # Application entity
 │   └── listings/     # Listing entity

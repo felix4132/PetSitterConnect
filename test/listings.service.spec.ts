@@ -48,44 +48,153 @@ describe('ListingsService', () => {
                 title: 'Test Listing',
                 description: 'test desc',
                 species: 'dog',
-                listingType: ['house-sitting'],
-                startDate: '2025-07-01',
-                endDate: '2025-07-02',
+                listingType: ['walks'],
+                startDate: '2025-07-15',
+                endDate: '2025-07-25',
                 sitterVerified: false,
-                price: 10,
-                breed: 'Bulldog',
-                age: 3,
-                size: 'medium',
-                feeding: 'twice a day',
-                medication: 'none',
+                price: 25,
             };
-            const expectedListing: Listing = {
+
+            const mockListing: Listing = {
                 id: 1,
-                ownerId: createDto.ownerId,
-                title: createDto.title,
-                description: createDto.description,
-                species: createDto.species,
-                listingType: createDto.listingType,
-                startDate: createDto.startDate,
-                endDate: createDto.endDate,
-                sitterVerified: createDto.sitterVerified,
-                price: createDto.price,
-                breed: createDto.breed,
-                age: createDto.age,
-                size: createDto.size,
-                feeding: createDto.feeding,
-                medication: createDto.medication,
+                ownerId: 'owner1',
+                title: 'Test Listing',
+                description: 'test desc',
+                species: 'dog',
+                listingType: ['walks'],
+                startDate: '2025-07-15',
+                endDate: '2025-07-25',
+                sitterVerified: false,
+                price: 25,
             };
-            mockDatabaseService.addListing.mockResolvedValue(expectedListing);
+
+            mockDatabaseService.addListing.mockResolvedValue(mockListing);
 
             // Act
             const result = await service.create(createDto);
 
             // Assert
-            expect(mockDatabaseService.addListing).toHaveBeenCalledWith(
-                createDto,
+            expect(result).toEqual(mockListing);
+            expect(mockDatabaseService.addListing).toHaveBeenCalledWith({
+                ownerId: 'owner1',
+                title: 'Test Listing',
+                description: 'test desc',
+                species: 'dog',
+                listingType: ['walks'],
+                startDate: '2025-07-15',
+                endDate: '2025-07-25',
+                price: 25,
+                sitterVerified: false,
+                breed: undefined,
+                age: undefined,
+                size: undefined,
+                feeding: undefined,
+                medication: undefined,
+            });
+        });
+
+        it('should throw BadRequestException for empty description', async () => {
+            // Arrange
+            const createDto: CreateListingDto = {
+                ownerId: 'owner1',
+                title: 'Test Listing',
+                description: '', // Empty description
+                species: 'dog',
+                listingType: ['walks'],
+                startDate: '2025-07-15',
+                endDate: '2025-07-25',
+                sitterVerified: false,
+                price: 25,
+            };
+
+            // Act & Assert
+            await expect(service.create(createDto)).rejects.toThrow(
+                'description should not be empty',
             );
-            expect(result).toEqual(expectedListing);
+        });
+
+        it('should throw BadRequestException for whitespace-only description', async () => {
+            // Arrange
+            const createDto: CreateListingDto = {
+                ownerId: 'owner1',
+                title: 'Test Listing',
+                description: '   ', // Whitespace-only description
+                species: 'dog',
+                listingType: ['walks'],
+                startDate: '2025-07-15',
+                endDate: '2025-07-25',
+                sitterVerified: false,
+                price: 25,
+            };
+
+            // Act & Assert
+            await expect(service.create(createDto)).rejects.toThrow(
+                'description should not be empty',
+            );
+        });
+
+        it('should throw BadRequestException for empty ownerId', async () => {
+            // Arrange
+            const createDto: CreateListingDto = {
+                ownerId: '', // Empty ownerId
+                title: 'Test Listing',
+                description: 'test desc',
+                species: 'dog',
+                listingType: ['walks'],
+                startDate: '2025-07-15',
+                endDate: '2025-07-25',
+                sitterVerified: false,
+                price: 25,
+            };
+
+            // Act & Assert
+            await expect(service.create(createDto)).rejects.toThrow(
+                'ownerId should not be empty',
+            );
+        });
+
+        it('should throw BadRequestException for whitespace-only ownerId', async () => {
+            // Arrange
+            const createDto: CreateListingDto = {
+                ownerId: '   ', // Whitespace-only ownerId
+                title: 'Test Listing',
+                description: 'test desc',
+                species: 'dog',
+                listingType: ['walks'],
+                startDate: '2025-07-15',
+                endDate: '2025-07-25',
+                sitterVerified: false,
+                price: 25,
+            };
+
+            // Act & Assert
+            await expect(service.create(createDto)).rejects.toThrow(
+                'ownerId should not be empty',
+            );
+        });
+
+        it('should throw InternalServerErrorException for database errors', async () => {
+            // Arrange
+            const createDto: CreateListingDto = {
+                ownerId: 'owner1',
+                title: 'Test Listing',
+                description: 'test desc',
+                species: 'dog',
+                listingType: ['walks'],
+                startDate: '2025-07-15',
+                endDate: '2025-07-25',
+                sitterVerified: false,
+                price: 25,
+            };
+
+            mockDatabaseService.addListing.mockRejectedValue(
+                new Error('Database error'),
+            );
+
+            // Act & Assert
+            await expect(service.create(createDto)).rejects.toThrow(
+                'Failed to create listing. Please try again.',
+            );
         });
     });
 
@@ -139,43 +248,34 @@ describe('ListingsService', () => {
                     endDate: '2025-07-02',
                     sitterVerified: false,
                     price: 10,
-                    breed: 'Bulldog',
-                    age: 3,
-                    size: 'medium',
-                    feeding: 'twice a day',
-                    medication: 'none',
-                },
-                {
-                    id: 2,
-                    ownerId: 'owner2',
-                    title: 'Test 2',
-                    description: 'desc 2',
-                    species: 'cat',
-                    listingType: ['day-care'],
-                    startDate: '2025-08-01',
-                    endDate: '2025-08-02',
-                    sitterVerified: true,
-                    price: 20,
-                    breed: 'Siamese',
-                    age: 2,
-                    size: 'small',
-                    feeding: 'once',
-                    medication: 'none',
                 },
             ];
-            mockDatabaseService.getListingsWithFilters.mockResolvedValue([
-                mockListings[0],
-            ]);
+
+            const filters = { price: 10 };
+            mockDatabaseService.getListingsWithFilters.mockResolvedValue(
+                mockListings,
+            );
 
             // Act
-            const result = await service.findAll({ price: 10 });
+            const result = await service.findAll(filters);
 
             // Assert
             expect(
                 mockDatabaseService.getListingsWithFilters,
-            ).toHaveBeenCalledWith({ price: 10 });
-            expect(result).toHaveLength(1);
-            expect(result[0]?.price).toBe(10);
+            ).toHaveBeenCalledWith(filters);
+            expect(result).toEqual(mockListings);
+        });
+
+        it('should throw InternalServerErrorException for database errors in findAll', async () => {
+            // Arrange
+            mockDatabaseService.getListingsWithFilters.mockRejectedValue(
+                new Error('Database error'),
+            );
+
+            // Act & Assert
+            await expect(service.findAll()).rejects.toThrow(
+                'Failed to retrieve listings. Please try again.',
+            );
         });
     });
 
