@@ -111,8 +111,27 @@ describe('ApplicationsService', () => {
                 status: 'accepted',
             };
 
+            // Mock other applications for the same listing (for auto-rejection logic)
+            const otherApplications: Application[] = [
+                {
+                    id: 2,
+                    listingId: 1,
+                    sitterId: 'sitter2',
+                    status: 'pending',
+                },
+                {
+                    id: 3,
+                    listingId: 1,
+                    sitterId: 'sitter3',
+                    status: 'pending',
+                },
+            ];
+
             mockDatabaseService.updateApplicationStatus.mockResolvedValue(
                 updatedApplication,
+            );
+            mockDatabaseService.getApplicationsByListing.mockResolvedValue(
+                otherApplications,
             );
 
             // Act
@@ -122,6 +141,16 @@ describe('ApplicationsService', () => {
             expect(
                 mockDatabaseService.updateApplicationStatus,
             ).toHaveBeenCalledWith(1, 'accepted');
+            expect(
+                mockDatabaseService.getApplicationsByListing,
+            ).toHaveBeenCalledWith(1);
+            // Should also reject other applications
+            expect(
+                mockDatabaseService.updateApplicationStatus,
+            ).toHaveBeenCalledWith(2, 'rejected');
+            expect(
+                mockDatabaseService.updateApplicationStatus,
+            ).toHaveBeenCalledWith(3, 'rejected');
             expect(result).toEqual(updatedApplication);
         });
 
