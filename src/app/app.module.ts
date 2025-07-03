@@ -6,6 +6,7 @@ import { GlobalExceptionFilter } from '../common/filters/global-exception.filter
 import { DatabaseModule } from '../infrastructure/database/database.module.js';
 import { ApplicationsModule } from '../modules/applications/applications.module.js';
 import { ListingsModule } from '../modules/listings/listings.module.js';
+import { SeederModule } from '../seeder/seeder.module.js';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 
@@ -34,6 +35,7 @@ import { AppService } from './app.service.js';
             }),
         }),
         DatabaseModule,
+        SeederModule,
         ListingsModule,
         ApplicationsModule,
     ],
