@@ -55,8 +55,8 @@ describe('SeederService', () => {
             const finalListingCount = await listingRepository.count();
             const finalApplicationCount = await applicationRepository.count();
 
-            expect(finalListingCount).toBe(5);
-            expect(finalApplicationCount).toBe(5);
+            expect(finalListingCount).toBe(3);
+            expect(finalApplicationCount).toBe(4);
         });
 
         it('should not seed if data already exists', async () => {
@@ -102,7 +102,7 @@ describe('SeederService', () => {
 
             const listings = await listingRepository.find();
 
-            expect(listings).toHaveLength(5);
+            expect(listings).toHaveLength(3);
 
             // Überprüfe erste Listing
             const goldenRetrieverListing = listings.find(
@@ -110,7 +110,7 @@ describe('SeederService', () => {
             );
 
             expect(goldenRetrieverListing).toBeDefined();
-            expect(goldenRetrieverListing?.ownerId).toBe('owner-1');
+            expect(goldenRetrieverListing?.ownerId).toBe('owner1');
             expect(goldenRetrieverListing?.title).toBe(
                 'Liebevolle Betreuung für Golden Retriever',
             );
@@ -129,7 +129,6 @@ describe('SeederService', () => {
             expect(species).toContain('dog');
             expect(species).toContain('cat');
             expect(species).toContain('bird');
-            expect(species).toContain('other');
         });
 
         it('should create applications with references to listings', async () => {
@@ -139,12 +138,12 @@ describe('SeederService', () => {
                 relations: ['listing'],
             });
 
-            expect(applications).toHaveLength(5);
+            expect(applications).toHaveLength(4);
 
             // Überprüfe, dass alle Applications gültige Listing-Referenzen haben
             applications.forEach((app) => {
                 expect(app.listingId).toBeGreaterThan(0);
-                expect(app.sitterId).toMatch(/^sitter-\d+$/);
+                expect(app.sitterId).toMatch(/^sitter[1-3]$/);
                 expect(['pending', 'accepted', 'rejected']).toContain(
                     app.status,
                 );

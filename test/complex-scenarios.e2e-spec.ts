@@ -419,7 +419,7 @@ describe('Complex Integration Scenarios (e2e)', () => {
                     startDate: '2025-08-10',
                     endDate: '2025-08-15',
                     sitterVerified: true,
-                    price: 45,
+                    price: 35,
                 },
                 {
                     ownerId: 'owner_c',
@@ -586,11 +586,11 @@ describe('Complex Integration Scenarios (e2e)', () => {
 
             // Test 3: Preis-Range filtering - verwende einen eindeutigen Preis
             const budgetListingsResponse = await request(app.getHttpServer())
-                .get('/listings?price=45')
+                .get('/listings?price=35')
                 .expect(200);
 
             expect(
-                budgetListingsResponse.body.some((l: any) => l.price === 45),
+                budgetListingsResponse.body.some((l: any) => l.price === 35),
             ).toBe(true);
 
             // Test 4: Spezies und Listing-Type Kombination

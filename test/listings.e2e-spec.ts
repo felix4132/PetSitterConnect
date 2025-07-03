@@ -101,9 +101,9 @@ describe('ListingsController (e2e)', () => {
 
         // Test numeric filter (age) - prüfe auf Vorhandensein
         const ageFilter = await request(app.getHttpServer())
-            .get('/listings?age=1')
+            .get('/listings?age=2')
             .expect(200);
-        expect(ageFilter.body.some((l: any) => l.age === 1)).toBe(true);
+        expect(ageFilter.body.some((l: any) => l.age === 2)).toBe(true);
 
         // Test boolean filter
         const verifiedFilter = await request(app.getHttpServer())
