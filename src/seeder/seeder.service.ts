@@ -36,7 +36,7 @@ export class SeederService implements OnApplicationBootstrap {
 
             const defaultListings: Partial<Listing>[] = [
                 {
-                    ownerId: 'owner-1',
+                    ownerId: 'owner1',
                     title: 'Liebevolle Betreuung für Golden Retriever',
                     description:
                         'Suche einen erfahrenen Hundesitter für meinen 3-jährigen Golden Retriever Max während meines Urlaubs. Er ist sehr freundlich und gut erzogen.',
@@ -53,7 +53,7 @@ export class SeederService implements OnApplicationBootstrap {
                     medication: 'Keine',
                 },
                 {
-                    ownerId: 'owner-2',
+                    ownerId: 'owner2',
                     title: 'Katzensitting für verschmuste Maine Coon',
                     description:
                         'Meine Maine Coon Katze Luna braucht liebevolle Betreuung. Sie ist sehr anhänglich und braucht viel Aufmerksamkeit.',
@@ -70,7 +70,7 @@ export class SeederService implements OnApplicationBootstrap {
                     medication: 'Keine',
                 },
                 {
-                    ownerId: 'owner-3',
+                    ownerId: 'owner3',
                     title: 'Betreuung für Wellensittich-Paar',
                     description:
                         'Suche jemanden, der sich um meine beiden Wellensittiche Pippo und Pippi kümmert. Sie sind sehr gesellig und brauchen tägliche Aufmerksamkeit.',
@@ -84,40 +84,6 @@ export class SeederService implements OnApplicationBootstrap {
                     age: 2,
                     size: 'Klein',
                     feeding: '1x täglich, Körnermischung',
-                    medication: 'Keine',
-                },
-                {
-                    ownerId: 'owner-4',
-                    title: 'Tagesbetreuung für Französische Bulldogge',
-                    description:
-                        'Mein Frenchie Bruno braucht Tagesbetreuung, da ich beruflich viel unterwegs bin. Er ist sehr ruhig und gut sozialisiert.',
-                    species: 'dog',
-                    listingType: ['day-care', 'walks'],
-                    startDate: '2025-07-10',
-                    endDate: '2025-07-20',
-                    sitterVerified: true,
-                    price: 45.0,
-                    breed: 'Französische Bulldogge',
-                    age: 4,
-                    size: 'Mittel',
-                    feeding: '2x täglich, spezielles Diätfutter',
-                    medication: 'Augentropfen täglich',
-                },
-                {
-                    ownerId: 'owner-5',
-                    title: 'Betreuung für Kaninchen während Urlaub',
-                    description:
-                        'Meine beiden Zwergkaninchen Hoppel und Poppel brauchen liebevolle Betreuung. Sie leben in einem großen Gehege im Garten.',
-                    species: 'other',
-                    listingType: ['drop-in-visit', 'feeding'],
-                    startDate: '2025-08-05',
-                    endDate: '2025-08-15',
-                    sitterVerified: false,
-                    price: 20.0,
-                    breed: 'Zwergkaninchen',
-                    age: 1,
-                    size: 'Klein',
-                    feeding: '2x täglich, Heu und Gemüse',
                     medication: 'Keine',
                 },
             ];
@@ -154,28 +120,23 @@ export class SeederService implements OnApplicationBootstrap {
         const defaultApplications: Partial<Application>[] = [
             {
                 listingId: listings[0]?.id,
-                sitterId: 'sitter-1',
-                status: 'rejected', // Wurde abgelehnt, da sitter-2 angenommen wurde
+                sitterId: 'sitter1',
+                status: 'rejected', // Wurde abgelehnt, da sitter2 angenommen wurde
             },
             {
                 listingId: listings[0]?.id,
-                sitterId: 'sitter-2',
+                sitterId: 'sitter2',
                 status: 'accepted', // Wurde angenommen
             },
             {
                 listingId: listings[1]?.id,
-                sitterId: 'sitter-3',
+                sitterId: 'sitter3',
                 status: 'pending',
             },
             {
                 listingId: listings[2]?.id,
-                sitterId: 'sitter-1',
+                sitterId: 'sitter1',
                 status: 'rejected',
-            },
-            {
-                listingId: listings[3]?.id,
-                sitterId: 'sitter-4',
-                status: 'pending',
             },
         ];
 
