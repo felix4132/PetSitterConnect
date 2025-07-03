@@ -50,7 +50,7 @@ describe('ApplicationsService', () => {
                 title: 'Test Listing',
                 description: 'test desc',
                 species: 'dog',
-                listingType: 'house-sitting',
+                listingType: ['house-sitting'],
                 startDate: '2025-07-01',
                 endDate: '2025-07-02',
                 sitterVerified: false,
