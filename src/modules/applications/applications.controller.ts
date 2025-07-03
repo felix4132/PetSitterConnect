@@ -26,7 +26,13 @@ export class ApplicationsController {
     @Post('listings/:id/applications')
     async apply(
         @Param('id', ParseIntPipe) id: number,
-        @Body(new ValidationPipe({ transform: true }))
+        @Body(
+            new ValidationPipe({
+                whitelist: true,
+                forbidNonWhitelisted: true,
+                transform: true,
+            }),
+        )
         body: CreateApplicationDto,
     ): Promise<Application> {
         return this.applicationsService.apply({
@@ -38,7 +44,13 @@ export class ApplicationsController {
     @Patch('applications/:id')
     async updateStatus(
         @Param('id', ParseIntPipe) id: number,
-        @Body(new ValidationPipe({ transform: true }))
+        @Body(
+            new ValidationPipe({
+                whitelist: true,
+                forbidNonWhitelisted: true,
+                transform: true,
+            }),
+        )
         body: UpdateApplicationDto,
     ): Promise<Application> {
         return this.applicationsService.updateStatus(id, body.status);

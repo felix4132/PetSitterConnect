@@ -69,6 +69,7 @@ describe('ApplicationsService', () => {
             };
 
             mockDatabaseService.getListing.mockResolvedValue(mockListing);
+            mockDatabaseService.getApplicationsByListing.mockResolvedValue([]); // Keine bestehenden Applications
             mockDatabaseService.addApplication.mockResolvedValue(
                 expectedApplication,
             );
@@ -78,6 +79,9 @@ describe('ApplicationsService', () => {
 
             // Assert
             expect(mockDatabaseService.getListing).toHaveBeenCalledWith(1);
+            expect(
+                mockDatabaseService.getApplicationsByListing,
+            ).toHaveBeenCalledWith(1);
             expect(mockDatabaseService.addApplication).toHaveBeenCalledWith({
                 listingId: 1,
                 sitterId: 'sitter1',
@@ -95,6 +99,49 @@ describe('ApplicationsService', () => {
                 'Listing with ID 999 not found',
             );
             expect(mockDatabaseService.getListing).toHaveBeenCalledWith(999);
+            expect(mockDatabaseService.addApplication).not.toHaveBeenCalled();
+        });
+
+        it('should throw error when sitter has already applied', async () => {
+            // Arrange
+            const applyDto = { sitterId: 'sitter1', listingId: 1 };
+            const mockListing: Listing = {
+                id: 1,
+                ownerId: 'owner1',
+                title: 'Test Listing',
+                description: 'test desc',
+                species: 'dog',
+                listingType: ['house-sitting'],
+                startDate: '2025-07-01',
+                endDate: '2025-07-02',
+                sitterVerified: false,
+                price: 10,
+                breed: 'Bulldog',
+                age: 3,
+                size: 'medium',
+                feeding: 'twice a day',
+                medication: 'none',
+            };
+            const existingApplication: Application = {
+                id: 99,
+                listingId: 1,
+                sitterId: 'sitter1',
+                status: 'pending',
+            };
+
+            mockDatabaseService.getListing.mockResolvedValue(mockListing);
+            mockDatabaseService.getApplicationsByListing.mockResolvedValue([
+                existingApplication,
+            ]);
+
+            // Act & Assert
+            await expect(service.apply(applyDto)).rejects.toThrow(
+                'Sitter sitter1 has already applied to listing 1',
+            );
+            expect(mockDatabaseService.getListing).toHaveBeenCalledWith(1);
+            expect(
+                mockDatabaseService.getApplicationsByListing,
+            ).toHaveBeenCalledWith(1);
             expect(mockDatabaseService.addApplication).not.toHaveBeenCalled();
         });
     });
@@ -233,6 +280,104 @@ describe('ApplicationsService', () => {
                 mockDatabaseService.getApplicationsByListing,
             ).toHaveBeenCalledWith(1);
             expect(result).toEqual(mockApplications);
+        });
+    });
+
+    describe('apply - Error Handling', () => {
+        it('should throw InternalServerErrorException for unexpected database errors', async () => {
+            // Arrange
+            const applyDto = { sitterId: 'sitter1', listingId: 1 };
+            const mockListing: Listing = {
+                id: 1,
+                ownerId: 'owner1',
+                title: 'Test Listing',
+                description: 'test desc',
+                species: 'dog',
+                listingType: ['house-sitting'],
+                startDate: '2025-07-01',
+                endDate: '2025-07-02',
+                sitterVerified: false,
+                price: 10,
+                breed: 'Bulldog',
+                age: 3,
+                size: 'medium',
+                feeding: 'twice a day',
+                medication: 'none',
+            };
+
+            mockDatabaseService.getListing.mockResolvedValue(mockListing);
+            mockDatabaseService.getApplicationsByListing.mockResolvedValue([]);
+            // Simulate unexpected database error
+            mockDatabaseService.addApplication.mockRejectedValue(
+                new Error('Unexpected database error'),
+            );
+
+            // Act & Assert
+            await expect(service.apply(applyDto)).rejects.toThrow(
+                'Failed to create application. Please try again.',
+            );
+        });
+    });
+
+    describe('updateStatus - Error Handling', () => {
+        it('should throw InternalServerErrorException for unexpected database errors', async () => {
+            // Arrange
+            const applicationId = 1;
+            const newStatus = 'accepted';
+
+            // Simulate unexpected database error
+            mockDatabaseService.updateApplicationStatus.mockRejectedValue(
+                new Error('Unexpected database error'),
+            );
+
+            // Act & Assert
+            await expect(
+                service.updateStatus(applicationId, newStatus),
+            ).rejects.toThrow(
+                'Failed to update application status. Please try again.',
+            );
+        });
+
+        it('should handle auto-rejection errors gracefully', async () => {
+            // Arrange
+            const applicationId = 1;
+            const newStatus = 'accepted';
+            const updatedApplication: Application = {
+                id: 1,
+                listingId: 1,
+                sitterId: 'sitter1',
+                status: 'accepted',
+            };
+
+            const otherApplications: Application[] = [
+                {
+                    id: 2,
+                    listingId: 1,
+                    sitterId: 'sitter2',
+                    status: 'pending',
+                },
+            ];
+
+            mockDatabaseService.updateApplicationStatus
+                .mockResolvedValueOnce(updatedApplication) // First call succeeds
+                .mockRejectedValueOnce(new Error('Auto-rejection failed')); // Second call fails
+
+            mockDatabaseService.getApplicationsByListing.mockResolvedValue(
+                otherApplications,
+            );
+
+            // Mock logger to check if warning was logged
+            const loggerWarnSpy = vi.spyOn(service['logger'], 'warn');
+
+            // Act
+            const result = await service.updateStatus(applicationId, newStatus);
+
+            // Assert
+            expect(result).toEqual(updatedApplication);
+            expect(loggerWarnSpy).toHaveBeenCalledWith(
+                'Failed to reject other applications:',
+                expect.any(Error),
+            );
         });
     });
 });

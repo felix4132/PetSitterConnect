@@ -442,4 +442,106 @@ describe('ListingsController (e2e)', () => {
             ),
         ).toBe(true);
     });
+
+    it('handles validation errors for listings', async () => {
+        // Test invalid species
+        const invalidSpeciesRes = await request(app.getHttpServer())
+            .post('/listings')
+            .send({
+                ...exampleListing,
+                species: 'invalid_species',
+            })
+            .expect(400);
+
+        expect(invalidSpeciesRes.body.message.message).toContain(
+            'species must be one of: dog, cat, bird, exotic, other',
+        );
+
+        // Test invalid listingType
+        const invalidListingTypeRes = await request(app.getHttpServer())
+            .post('/listings')
+            .send({
+                ...exampleListing,
+                listingType: ['invalid_type'],
+            })
+            .expect(400);
+
+        expect(invalidListingTypeRes.body.message.message).toContain(
+            'listingType',
+        );
+
+        // Test empty title
+        const emptyTitleRes = await request(app.getHttpServer())
+            .post('/listings')
+            .send({
+                ...exampleListing,
+                title: '',
+            })
+            .expect(400);
+
+        expect(emptyTitleRes.body.message.message).toContain('title');
+
+        // Test negative price
+        const negativePriceRes = await request(app.getHttpServer())
+            .post('/listings')
+            .send({
+                ...exampleListing,
+                price: -10,
+            })
+            .expect(400);
+
+        expect(negativePriceRes.body.message.message).toContain('price');
+    });
+
+    it('handles query validation errors', async () => {
+        // Test invalid species in query
+        const invalidSpeciesQueryRes = await request(app.getHttpServer())
+            .get('/listings?species=invalid_species')
+            .expect(400);
+
+        expect(invalidSpeciesQueryRes.body.message.message).toContain(
+            'species must be one of: dog, cat, bird, exotic, other',
+        );
+
+        // Test invalid listingType in query
+        const invalidListingTypeQueryRes = await request(app.getHttpServer())
+            .get('/listings?listingType=invalid_type')
+            .expect(400);
+
+        expect(invalidListingTypeQueryRes.body.message.message).toContain(
+            'listingType',
+        );
+
+        // Test invalid boolean for sitterVerified
+        await request(app.getHttpServer())
+            .get('/listings?sitterVerified=invalid_boolean')
+            .expect(200); // Should succeed but cast to false
+
+        // Valid requests should still work
+        const validRes = await request(app.getHttpServer())
+            .get('/listings?species=dog&sitterVerified=true')
+            .expect(200);
+
+        expect(Array.isArray(validRes.body)).toBe(true);
+    });
+
+    it('handles not found errors', async () => {
+        // Test non-existent listing
+        const notFoundRes = await request(app.getHttpServer())
+            .get('/listings/999999')
+            .expect(404);
+
+        expect(notFoundRes.body.message.message).toBe(
+            'Listing with ID 999999 not found',
+        );
+
+        // Test non-existent listing with applications
+        const notFoundWithAppsRes = await request(app.getHttpServer())
+            .get('/listings/999999/with-applications')
+            .expect(404);
+
+        expect(notFoundWithAppsRes.body.message.message).toBe(
+            'Listing with ID 999999 not found',
+        );
+    });
 });

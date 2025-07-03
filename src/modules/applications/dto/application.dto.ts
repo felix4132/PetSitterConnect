@@ -8,7 +8,10 @@ export class CreateApplicationDto {
 }
 
 export class UpdateApplicationDto {
-    @IsEnum(['pending', 'accepted', 'rejected'])
+    @IsEnum(['pending', 'accepted', 'rejected'], {
+        message:
+            'status must be one of the following values: pending, accepted, rejected',
+    })
     @IsNotEmpty()
     status!: 'pending' | 'accepted' | 'rejected';
 }

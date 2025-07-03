@@ -12,11 +12,9 @@ import {
 export class FindListingsQueryDto {
     @IsOptional()
     @Transform(({ value }: { value: string }) => {
+        if (typeof value !== 'string') return value;
         const parsed = parseInt(value, 10);
-        if (isNaN(parsed)) {
-            throw new Error(`Invalid number: ${value}`);
-        }
-        return parsed;
+        return isNaN(parsed) ? value : parsed; // Lass Validierung den Fehler handhaben
     })
     @IsNumber()
     @Min(1)
@@ -35,7 +33,9 @@ export class FindListingsQueryDto {
     description?: string;
 
     @IsOptional()
-    @IsEnum(['dog', 'cat', 'bird', 'exotic', 'other'])
+    @IsEnum(['dog', 'cat', 'bird', 'exotic', 'other'], {
+        message: 'species must be one of: dog, cat, bird, exotic, other',
+    })
     species?: 'dog' | 'cat' | 'bird' | 'exotic' | 'other';
 
     @IsOptional()
@@ -48,7 +48,11 @@ export class FindListingsQueryDto {
             'feeding',
             'overnight',
         ],
-        { each: true },
+        {
+            each: true,
+            message:
+                'each listingType must be one of: house-sitting, drop-in-visit, day-care, walks, feeding, overnight',
+        },
     )
     listingType?: Array<
         | 'house-sitting'
@@ -74,11 +78,9 @@ export class FindListingsQueryDto {
 
     @IsOptional()
     @Transform(({ value }: { value: string }) => {
+        if (typeof value !== 'string') return value;
         const parsed = parseFloat(value);
-        if (isNaN(parsed)) {
-            throw new Error(`Invalid number: ${value}`);
-        }
-        return parsed;
+        return isNaN(parsed) ? value : parsed; // Lass Validierung den Fehler handhaben
     })
     @IsNumber()
     @Min(0)
@@ -90,11 +92,9 @@ export class FindListingsQueryDto {
 
     @IsOptional()
     @Transform(({ value }: { value: string }) => {
+        if (typeof value !== 'string') return value;
         const parsed = parseInt(value, 10);
-        if (isNaN(parsed)) {
-            throw new Error(`Invalid number: ${value}`);
-        }
-        return parsed;
+        return isNaN(parsed) ? value : parsed; // Lass Validierung den Fehler handhaben
     })
     @IsNumber()
     @Min(0)

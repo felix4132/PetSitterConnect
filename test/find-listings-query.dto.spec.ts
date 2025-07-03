@@ -167,26 +167,29 @@ describe('FindListingsQueryDto', () => {
     });
 
     describe('transformer error cases', () => {
-        it('should throw for invalid id', () => {
-            expect(() => {
-                plainToInstance(FindListingsQueryDto, {
-                    id: 'not-a-number',
-                });
-            }).toThrow('Invalid number: not-a-number');
+        it('should fail validation for invalid id after transformation', async () => {
+            const dto = plainToInstance(FindListingsQueryDto, {
+                id: 'not-a-number',
+            });
+            const errors = await validate(dto);
+            expect(errors.length).toBeGreaterThan(0);
+            expect(errors[0]?.property).toBe('id');
         });
-        it('should throw for invalid price', () => {
-            expect(() => {
-                plainToInstance(FindListingsQueryDto, {
-                    price: 'not-a-number',
-                });
-            }).toThrow('Invalid number: not-a-number');
+        it('should fail validation for invalid price after transformation', async () => {
+            const dto = plainToInstance(FindListingsQueryDto, {
+                price: 'not-a-number',
+            });
+            const errors = await validate(dto);
+            expect(errors.length).toBeGreaterThan(0);
+            expect(errors[0]?.property).toBe('price');
         });
-        it('should throw for invalid age', () => {
-            expect(() => {
-                plainToInstance(FindListingsQueryDto, {
-                    age: 'not-a-number',
-                });
-            }).toThrow('Invalid number: not-a-number');
+        it('should fail validation for invalid age after transformation', async () => {
+            const dto = plainToInstance(FindListingsQueryDto, {
+                age: 'not-a-number',
+            });
+            const errors = await validate(dto);
+            expect(errors.length).toBeGreaterThan(0);
+            expect(errors[0]?.property).toBe('age');
         });
         it('should not throw for invalid sitterVerified, but set to false', () => {
             // Der aktuelle Transformer gibt nur true/false zurück, kein throw. Optional: Transformer anpassen, damit er bei ungültigen Werten wirft.
@@ -195,6 +198,51 @@ describe('FindListingsQueryDto', () => {
             });
             // Der Wert ist dann false, weil 'not-a-bool' !== 'true'.
             expect(dto.sitterVerified).toBe(false);
+        });
+    });
+
+    describe('edge cases for transform functions', () => {
+        it('should handle non-string values in id transformer', async () => {
+            const dto = plainToInstance(FindListingsQueryDto, {
+                id: 123, // number, not string
+            });
+            expect(dto.id).toBe(123); // should pass through unchanged
+
+            const errors = await validate(dto);
+            expect(errors).toHaveLength(0); // should be valid since it's a valid number
+        });
+
+        it('should handle non-string values in price transformer', async () => {
+            const dto = plainToInstance(FindListingsQueryDto, {
+                price: 25.5, // number, not string
+            });
+            expect(dto.price).toBe(25.5); // should pass through unchanged
+
+            const errors = await validate(dto);
+            expect(errors).toHaveLength(0); // should be valid since it's a valid number
+        });
+
+        it('should handle non-string values in age transformer', async () => {
+            const dto = plainToInstance(FindListingsQueryDto, {
+                age: 5, // number, not string
+            });
+            expect(dto.age).toBe(5); // should pass through unchanged
+
+            const errors = await validate(dto);
+            expect(errors).toHaveLength(0); // should be valid since it's a valid number
+        });
+
+        it('should handle null/undefined values in transformers', () => {
+            const dto = plainToInstance(FindListingsQueryDto, {
+                id: null,
+                price: undefined,
+                age: null,
+            });
+
+            // Values should be passed through unchanged
+            expect(dto.id).toBe(null);
+            expect(dto.price).toBe(undefined);
+            expect(dto.age).toBe(null);
         });
     });
 });
