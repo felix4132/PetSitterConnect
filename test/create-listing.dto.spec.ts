@@ -15,7 +15,7 @@ describe('CreateListingDto', () => {
             dto.title = 'Pet Sitting Job';
             dto.description = 'Looking for a pet sitter';
             dto.species = 'dog';
-            dto.listingType = 'house-sitting';
+            dto.listingType = ['house-sitting'];
             dto.startDate = '2025-08-01';
             dto.endDate = '2025-08-05';
             dto.sitterVerified = true;
@@ -30,7 +30,7 @@ describe('CreateListingDto', () => {
             dto.title = 'Pet Sitting Job';
             dto.description = 'Looking for a pet sitter';
             dto.species = 'cat';
-            dto.listingType = 'day-care';
+            dto.listingType = ['day-care'];
             dto.startDate = '2025-08-01';
             dto.endDate = '2025-08-05';
             dto.sitterVerified = false;
@@ -51,7 +51,7 @@ describe('CreateListingDto', () => {
             dto.title = 'Pet Sitting Job';
             dto.description = 'Looking for a pet sitter';
             dto.species = 'dog';
-            dto.listingType = 'house-sitting';
+            dto.listingType = ['house-sitting'];
             dto.startDate = '2025-08-01';
             dto.endDate = '2025-08-05';
             dto.sitterVerified = true;
@@ -67,7 +67,7 @@ describe('CreateListingDto', () => {
             dto.title = '';
             dto.description = 'Looking for a pet sitter';
             dto.species = 'dog';
-            dto.listingType = 'house-sitting';
+            dto.listingType = ['house-sitting'];
             dto.startDate = '2025-08-01';
             dto.endDate = '2025-08-05';
             dto.sitterVerified = true;
@@ -83,7 +83,7 @@ describe('CreateListingDto', () => {
             dto.title = 'Pet Sitting Job';
             dto.description = 'Looking for a pet sitter';
             dto.species = 'dog';
-            dto.listingType = 'house-sitting';
+            dto.listingType = ['house-sitting'];
             dto.startDate = '2025-08-01';
             dto.endDate = '2025-08-05';
             dto.sitterVerified = true;
@@ -101,7 +101,7 @@ describe('CreateListingDto', () => {
             dto.title = 'Pet Sitting Job';
             dto.description = 'Looking for a pet sitter';
             dto.species = 'invalid' as any;
-            dto.listingType = 'house-sitting';
+            dto.listingType = ['house-sitting'];
             dto.startDate = '2025-08-01';
             dto.endDate = '2025-08-05';
             dto.sitterVerified = true;
@@ -121,7 +121,7 @@ describe('CreateListingDto', () => {
                 testDto.title = 'Pet Sitting Job';
                 testDto.description = 'Looking for a pet sitter';
                 testDto.species = species as any;
-                testDto.listingType = 'house-sitting';
+                testDto.listingType = ['house-sitting'];
                 testDto.startDate = '2025-08-01';
                 testDto.endDate = '2025-08-05';
                 testDto.sitterVerified = true;
@@ -148,7 +148,7 @@ describe('CreateListingDto', () => {
                 testDto.title = 'Pet Sitting Job';
                 testDto.description = 'Looking for a pet sitter';
                 testDto.species = 'dog';
-                testDto.listingType = listingType as any;
+                testDto.listingType = [listingType as any];
                 testDto.startDate = '2025-08-01';
                 testDto.endDate = '2025-08-05';
                 testDto.sitterVerified = true;
@@ -166,7 +166,7 @@ describe('CreateListingDto', () => {
             dto.title = 'Pet Sitting Job';
             dto.description = 'Looking for a pet sitter';
             dto.species = 'dog';
-            dto.listingType = 'house-sitting';
+            dto.listingType = ['house-sitting'];
             dto.startDate = 'invalid-date';
             dto.endDate = '2025-08-05';
             dto.sitterVerified = true;
@@ -182,7 +182,7 @@ describe('CreateListingDto', () => {
             dto.title = 'Pet Sitting Job';
             dto.description = 'Looking for a pet sitter';
             dto.species = 'dog';
-            dto.listingType = 'house-sitting';
+            dto.listingType = ['house-sitting'];
             dto.startDate = '2025-08-01T10:00:00Z';
             dto.endDate = '2025-08-05T18:00:00Z';
             dto.sitterVerified = true;
@@ -199,7 +199,7 @@ describe('CreateListingDto', () => {
             dto.title = 'Pet Sitting Job';
             dto.description = 'Looking for a pet sitter';
             dto.species = 'dog';
-            dto.listingType = 'house-sitting';
+            dto.listingType = ['house-sitting'];
             dto.startDate = '2025-08-01';
             dto.endDate = '2025-08-05';
             dto.sitterVerified = true;
@@ -216,7 +216,7 @@ describe('CreateListingDto', () => {
             dto.title = 'Pet Sitting Job';
             dto.description = 'Looking for a pet sitter';
             dto.species = 'dog';
-            dto.listingType = 'house-sitting';
+            dto.listingType = ['house-sitting'];
             dto.startDate = '2025-08-01';
             dto.endDate = '2025-08-05';
             dto.sitterVerified = true;
@@ -224,6 +224,71 @@ describe('CreateListingDto', () => {
 
             const errors = await validate(dto);
             expect(errors).toHaveLength(0);
+        });
+    });
+
+    describe('Array Validation', () => {
+        it('should validate with multiple listingType values', async () => {
+            dto.ownerId = 'owner123';
+            dto.title = 'Pet Sitting Job';
+            dto.description = 'Looking for a pet sitter';
+            dto.species = 'dog';
+            dto.listingType = ['house-sitting', 'day-care', 'walks'];
+            dto.startDate = '2025-08-01';
+            dto.endDate = '2025-08-05';
+            dto.sitterVerified = true;
+            dto.price = 25;
+
+            const errors = await validate(dto);
+            expect(errors).toHaveLength(0);
+        });
+
+        it('should fail validation with empty listingType array', async () => {
+            dto.ownerId = 'owner123';
+            dto.title = 'Pet Sitting Job';
+            dto.description = 'Looking for a pet sitter';
+            dto.species = 'dog';
+            dto.listingType = [];
+            dto.startDate = '2025-08-01';
+            dto.endDate = '2025-08-05';
+            dto.sitterVerified = true;
+            dto.price = 25;
+
+            const errors = await validate(dto);
+            expect(errors.length).toBeGreaterThan(0);
+            expect(errors[0]?.property).toBe('listingType');
+        });
+
+        it('should fail validation with duplicate listingType values', async () => {
+            dto.ownerId = 'owner123';
+            dto.title = 'Pet Sitting Job';
+            dto.description = 'Looking for a pet sitter';
+            dto.species = 'dog';
+            dto.listingType = ['house-sitting', 'house-sitting'];
+            dto.startDate = '2025-08-01';
+            dto.endDate = '2025-08-05';
+            dto.sitterVerified = true;
+            dto.price = 25;
+
+            const errors = await validate(dto);
+            expect(errors.length).toBeGreaterThan(0);
+            expect(errors[0]?.property).toBe('listingType');
+        });
+
+        it('should fail validation with invalid listingType value in array', async () => {
+            dto.ownerId = 'owner123';
+            dto.title = 'Pet Sitting Job';
+            dto.description = 'Looking for a pet sitter';
+            dto.species = 'dog';
+            dto.listingType = ['house-sitting', 'invalid-type'] as any;
+            dto.startDate = '2025-08-01';
+            dto.endDate = '2025-08-05';
+            dto.sitterVerified = true;
+            dto.price = 25;
+
+            const errors = await validate(dto);
+            expect(errors.length).toBeGreaterThan(0);
+            expect(errors[0]?.property).toBe('listingType');
         });
     });
 });

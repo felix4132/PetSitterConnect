@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Listing } from '../src/domain/listings/listing.entity.ts';
 import { CreateListingDto } from '../src/modules/listings/dto/create-listing.dto.ts';
+import { FindListingsQueryDto } from '../src/modules/listings/dto/find-listings-query.dto.ts';
 import { ListingsController } from '../src/modules/listings/listings.controller.ts';
 import { ListingsService } from '../src/modules/listings/listings.service.ts';
 
@@ -46,7 +47,7 @@ describe('ListingsController', () => {
                 title: 'Test Listing',
                 description: 'test desc',
                 species: 'dog',
-                listingType: 'house-sitting',
+                listingType: ['house-sitting'],
                 startDate: '2025-07-01',
                 endDate: '2025-07-02',
                 sitterVerified: false,
@@ -95,7 +96,7 @@ describe('ListingsController', () => {
                     title: 'Test 1',
                     description: 'desc 1',
                     species: 'dog',
-                    listingType: 'house-sitting',
+                    listingType: ['house-sitting'],
                     startDate: '2025-07-01',
                     endDate: '2025-07-02',
                     sitterVerified: false,
@@ -118,11 +119,11 @@ describe('ListingsController', () => {
         });
 
         it('should parse query parameters correctly', async () => {
-            // Arrange
-            const queryParams = {
-                price: '10',
-                age: '3',
-                sitterVerified: 'true',
+            // Arrange - Using already transformed values as they would come from ValidationPipe
+            const queryParams: FindListingsQueryDto = {
+                price: 10,
+                age: 3,
+                sitterVerified: true,
                 ownerId: 'owner1',
             };
             const expectedParsedQuery = {
@@ -142,12 +143,9 @@ describe('ListingsController', () => {
             );
         });
 
-        it('should ignore invalid numeric parameters', async () => {
+        it('should handle empty query parameters', async () => {
             // Arrange
-            const queryParams = {
-                price: 'invalid',
-                age: 'notanumber',
-            };
+            const queryParams: FindListingsQueryDto = {};
             mockListingsService.findAll.mockResolvedValue([]);
 
             // Act
@@ -159,8 +157,8 @@ describe('ListingsController', () => {
 
         it('should parse boolean parameters correctly', async () => {
             // Arrange
-            const queryParams = {
-                sitterVerified: 'false',
+            const queryParams: FindListingsQueryDto = {
+                sitterVerified: false,
             };
             const expectedParsedQuery = {
                 sitterVerified: false,
@@ -178,8 +176,8 @@ describe('ListingsController', () => {
 
         it('should parse id query parameter correctly', async () => {
             // Arrange
-            const queryParams = {
-                id: '123',
+            const queryParams: FindListingsQueryDto = {
+                id: 123,
             };
             const expectedParsedQuery = {
                 id: 123,
@@ -195,10 +193,11 @@ describe('ListingsController', () => {
             );
         });
 
-        it('should ignore invalid id parameter', async () => {
+        it('should handle valid number transformation', async () => {
             // Arrange
-            const queryParams = {
-                id: 'invalid-id',
+            const queryParams: FindListingsQueryDto = {
+                price: 25.5,
+                age: 3,
             };
             mockListingsService.findAll.mockResolvedValue([]);
 
@@ -206,12 +205,14 @@ describe('ListingsController', () => {
             await controller.find(queryParams);
 
             // Assert
-            expect(mockListingsService.findAll).toHaveBeenCalledWith({});
+            expect(mockListingsService.findAll).toHaveBeenCalledWith(
+                queryParams,
+            );
         });
 
         it('should parse species query parameter correctly', async () => {
             // Arrange
-            const queryParams = {
+            const queryParams: FindListingsQueryDto = {
                 species: 'cat',
             };
             const expectedParsedQuery = {
@@ -230,11 +231,11 @@ describe('ListingsController', () => {
 
         it('should parse listingType query parameter correctly', async () => {
             // Arrange
-            const queryParams = {
-                listingType: 'drop-in-visit',
+            const queryParams: FindListingsQueryDto = {
+                listingType: ['drop-in-visit'],
             };
             const expectedParsedQuery = {
-                listingType: 'drop-in-visit',
+                listingType: ['drop-in-visit'],
             };
             mockListingsService.findAll.mockResolvedValue([]);
 
@@ -249,7 +250,7 @@ describe('ListingsController', () => {
 
         it('should parse all string fields correctly', async () => {
             // Arrange
-            const queryParams = {
+            const queryParams: FindListingsQueryDto = {
                 title: 'Test Title',
                 description: 'Test Description',
                 startDate: '2025-01-01',
@@ -282,14 +283,14 @@ describe('ListingsController', () => {
 
         it('should handle complex query with all parameter types', async () => {
             // Arrange
-            const queryParams = {
-                id: '42',
-                price: '25.50',
-                age: '5',
-                sitterVerified: 'false',
+            const queryParams: FindListingsQueryDto = {
+                id: 42,
+                price: 25.5,
+                age: 5,
+                sitterVerified: false,
                 ownerId: 'owner123',
                 species: 'bird',
-                listingType: 'day-care',
+                listingType: ['day-care'],
                 title: 'Beautiful Parrot',
                 breed: 'African Grey',
             };
@@ -300,7 +301,7 @@ describe('ListingsController', () => {
                 sitterVerified: false,
                 ownerId: 'owner123',
                 species: 'bird',
-                listingType: 'day-care',
+                listingType: ['day-care'],
                 title: 'Beautiful Parrot',
                 breed: 'African Grey',
             };
@@ -326,7 +327,7 @@ describe('ListingsController', () => {
                 title: 'Test 1',
                 description: 'desc 1',
                 species: 'dog',
-                listingType: 'house-sitting',
+                listingType: ['house-sitting'],
                 startDate: '2025-07-01',
                 endDate: '2025-07-02',
                 sitterVerified: false,
@@ -371,7 +372,7 @@ describe('ListingsController', () => {
                     title: 'Test 1',
                     description: 'desc 1',
                     species: 'dog',
-                    listingType: 'house-sitting',
+                    listingType: ['house-sitting'],
                     startDate: '2025-07-01',
                     endDate: '2025-07-02',
                     sitterVerified: false,
@@ -406,7 +407,7 @@ describe('ListingsController', () => {
                 title: 'Test Listing',
                 description: 'test desc',
                 species: 'dog',
-                listingType: 'house-sitting',
+                listingType: ['house-sitting'],
                 startDate: '2025-07-01',
                 endDate: '2025-07-02',
                 sitterVerified: false,

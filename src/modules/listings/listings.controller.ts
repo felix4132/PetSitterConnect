@@ -12,6 +12,7 @@ import {
 } from '@nestjs/common';
 import type { Listing } from '../../domain/listings/listing.entity.js';
 import { CreateListingDto } from './dto/create-listing.dto.js';
+import { FindListingsQueryDto } from './dto/find-listings-query.dto.js';
 import { ListingsService } from './listings.service.js';
 
 @Controller('listings')
@@ -29,48 +30,11 @@ export class ListingsController {
     }
 
     @Get()
-    async find(@Query() query: Record<string, string>): Promise<Listing[]> {
-        // Parse query parameters to correct types
-        const parsedQuery: Partial<Listing> = {};
-
-        // Parse numeric fields
-        if (query.id) {
-            const parsed = parseInt(query.id, 10);
-            if (!isNaN(parsed)) parsedQuery.id = parsed;
-        }
-        if (query.price) {
-            const parsed = parseFloat(query.price);
-            if (!isNaN(parsed)) parsedQuery.price = parsed;
-        }
-        if (query.age) {
-            const parsed = parseInt(query.age, 10);
-            if (!isNaN(parsed)) parsedQuery.age = parsed;
-        }
-
-        // Parse boolean fields
-        if (query.sitterVerified) {
-            parsedQuery.sitterVerified = query.sitterVerified === 'true';
-        }
-
-        // Keep string fields as they are
-        if (query.ownerId) parsedQuery.ownerId = query.ownerId;
-        if (query.title) parsedQuery.title = query.title;
-        if (query.description) parsedQuery.description = query.description;
-        if (query.species) {
-            parsedQuery.species = query.species as Listing['species'];
-        }
-        if (query.listingType) {
-            parsedQuery.listingType =
-                query.listingType as Listing['listingType'];
-        }
-        if (query.startDate) parsedQuery.startDate = query.startDate;
-        if (query.endDate) parsedQuery.endDate = query.endDate;
-        if (query.breed) parsedQuery.breed = query.breed;
-        if (query.size) parsedQuery.size = query.size;
-        if (query.feeding) parsedQuery.feeding = query.feeding;
-        if (query.medication) parsedQuery.medication = query.medication;
-
-        return this.listingsService.findAll(parsedQuery);
+    async find(
+        @Query(new ValidationPipe({ transform: true }))
+        query: FindListingsQueryDto,
+    ): Promise<Listing[]> {
+        return this.listingsService.findAll(query);
     }
 
     @Get(':id/with-applications')

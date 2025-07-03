@@ -55,7 +55,7 @@ describe('DatabaseService', () => {
                     title: 'Test Listing',
                     description: 'test desc',
                     species: 'dog' as const,
-                    listingType: 'house-sitting' as const,
+                    listingType: ['house-sitting'] as 'house-sitting'[],
                     startDate: '2025-07-01',
                     endDate: '2025-07-02',
                     sitterVerified: false,
@@ -98,7 +98,7 @@ describe('DatabaseService', () => {
                     title: 'Test Listing',
                     description: 'test desc',
                     species: 'dog' as const,
-                    listingType: 'house-sitting' as const,
+                    listingType: ['house-sitting'],
                     startDate: '2025-07-01',
                     endDate: '2025-07-02',
                     sitterVerified: false,
@@ -148,7 +148,7 @@ describe('DatabaseService', () => {
                         title: 'Test Listing 1',
                         description: 'test desc 1',
                         species: 'dog' as const,
-                        listingType: 'house-sitting' as const,
+                        listingType: ['house-sitting'],
                         startDate: '2025-07-01',
                         endDate: '2025-07-02',
                         sitterVerified: false,
@@ -189,7 +189,7 @@ describe('DatabaseService', () => {
                         title: 'Dog Listing',
                         description: 'test desc',
                         species: 'dog' as const,
-                        listingType: 'house-sitting' as const,
+                        listingType: ['house-sitting'],
                         startDate: '2025-07-01',
                         endDate: '2025-07-02',
                         sitterVerified: false,
@@ -228,7 +228,7 @@ describe('DatabaseService', () => {
                         title: 'Test Listing',
                         description: 'test desc',
                         species: 'dog' as const,
-                        listingType: 'house-sitting' as const,
+                        listingType: ['house-sitting'],
                         startDate: '2025-07-01',
                         endDate: '2025-07-02',
                         sitterVerified: false,
@@ -257,6 +257,66 @@ describe('DatabaseService', () => {
                 });
                 expect(result).toEqual(mockListings);
             });
+
+            it('should cast sitterVerified string "true" to boolean true', async () => {
+                const filters = { sitterVerified: 'true' };
+                const findSpyResult = vi.fn().mockResolvedValue([]);
+                listingRepository.find = findSpyResult;
+                await service.getListingsWithFilters(filters as any);
+                expect(findSpyResult).toHaveBeenCalledWith({
+                    where: { sitterVerified: true },
+                    order: { id: 'DESC' },
+                    take: 100,
+                });
+            });
+            it('should cast sitterVerified string "false" to boolean false', async () => {
+                const filters = { sitterVerified: 'false' };
+                const findSpyResult = vi.fn().mockResolvedValue([]);
+                listingRepository.find = findSpyResult;
+                await service.getListingsWithFilters(filters as any);
+                expect(findSpyResult).toHaveBeenCalledWith({
+                    where: { sitterVerified: false },
+                    order: { id: 'DESC' },
+                    take: 100,
+                });
+            });
+            it('should ignore sitterVerified if not boolean or "true"/"false"', async () => {
+                const filters = { sitterVerified: 'not-a-bool' };
+                const findSpyResult = vi.fn().mockResolvedValue([]);
+                listingRepository.find = findSpyResult;
+                await service.getListingsWithFilters(filters as any);
+                expect(findSpyResult).toHaveBeenCalledWith({
+                    where: {},
+                    order: { id: 'DESC' },
+                    take: 100,
+                });
+            });
+            it('should cast price, age, id string numbers to numbers', async () => {
+                const filters = { price: '10', age: '5', id: '3' };
+                const findSpyResult = vi.fn().mockResolvedValue([]);
+                listingRepository.find = findSpyResult;
+                await service.getListingsWithFilters(filters as any);
+                expect(findSpyResult).toHaveBeenCalledWith({
+                    where: { price: 10, age: 5, id: 3 },
+                    order: { id: 'DESC' },
+                    take: 100,
+                });
+            });
+            it('should ignore price, age, id if not a number', async () => {
+                const filters = {
+                    price: 'not-a-number',
+                    age: 'NaN',
+                    id: 'foo',
+                };
+                const findSpyResult = vi.fn().mockResolvedValue([]);
+                listingRepository.find = findSpyResult;
+                await service.getListingsWithFilters(filters as any);
+                expect(findSpyResult).toHaveBeenCalledWith({
+                    where: {},
+                    order: { id: 'DESC' },
+                    take: 100,
+                });
+            });
         });
 
         describe('getListingsByOwner', () => {
@@ -270,7 +330,7 @@ describe('DatabaseService', () => {
                         title: 'Owner Listing',
                         description: 'test desc',
                         species: 'dog' as const,
-                        listingType: 'house-sitting' as const,
+                        listingType: ['house-sitting'],
                         startDate: '2025-07-01',
                         endDate: '2025-07-02',
                         sitterVerified: false,
@@ -310,7 +370,7 @@ describe('DatabaseService', () => {
                     title: 'Test Listing',
                     description: 'test desc',
                     species: 'dog' as const,
-                    listingType: 'house-sitting' as const,
+                    listingType: ['house-sitting'],
                     startDate: '2025-07-01',
                     endDate: '2025-07-02',
                     sitterVerified: false,
@@ -378,7 +438,7 @@ describe('DatabaseService', () => {
                             title: 'Test Listing',
                             description: 'test desc',
                             species: 'dog' as const,
-                            listingType: 'house-sitting' as const,
+                            listingType: ['house-sitting'],
                             startDate: '2025-07-01',
                             endDate: '2025-07-02',
                             sitterVerified: false,

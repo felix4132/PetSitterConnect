@@ -1,4 +1,7 @@
 import {
+    ArrayNotEmpty,
+    ArrayUnique,
+    IsArray,
     IsBoolean,
     IsEnum,
     IsISO8601,
@@ -25,21 +28,28 @@ export class CreateListingDto {
     @IsEnum(['dog', 'cat', 'bird', 'exotic', 'other'])
     species!: 'dog' | 'cat' | 'bird' | 'exotic' | 'other';
 
-    @IsEnum([
-        'house-sitting',
-        'drop-in-visit',
-        'day-care',
-        'walks',
-        'feeding',
-        'overnight',
-    ])
-    listingType!:
+    @IsArray()
+    @ArrayNotEmpty()
+    @ArrayUnique()
+    @IsEnum(
+        [
+            'house-sitting',
+            'drop-in-visit',
+            'day-care',
+            'walks',
+            'feeding',
+            'overnight',
+        ],
+        { each: true },
+    )
+    listingType!: Array<
         | 'house-sitting'
         | 'drop-in-visit'
         | 'day-care'
         | 'walks'
         | 'feeding'
-        | 'overnight';
+        | 'overnight'
+    >;
 
     @IsISO8601()
     startDate!: string;
