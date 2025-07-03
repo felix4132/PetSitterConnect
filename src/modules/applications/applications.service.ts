@@ -41,6 +41,23 @@ export class ApplicationsService {
                 `Application with ID ${id.toString()} not found`,
             );
         }
+
+        // Wenn eine Bewerbung angenommen wird, alle anderen für dasselbe Listing ablehnen
+        if (status === 'accepted') {
+            const otherApplications = await this.db.getApplicationsByListing(
+                application.listingId,
+            );
+
+            // Alle anderen Bewerbungen auf 'rejected' setzen
+            const rejectPromises = otherApplications
+                .filter((app) => app.id !== id && app.status !== 'rejected')
+                .map((app) =>
+                    this.db.updateApplicationStatus(app.id, 'rejected'),
+                );
+
+            await Promise.all(rejectPromises);
+        }
+
         return application;
     }
 

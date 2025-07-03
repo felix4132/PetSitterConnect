@@ -317,6 +317,28 @@ describe('DatabaseService', () => {
                     take: 100,
                 });
             });
+            it('should handle sitterVerified as boolean true', async () => {
+                const filters = { sitterVerified: true };
+                const findSpyResult = vi.fn().mockResolvedValue([]);
+                listingRepository.find = findSpyResult;
+                await service.getListingsWithFilters(filters as any);
+                expect(findSpyResult).toHaveBeenCalledWith({
+                    where: { sitterVerified: true },
+                    order: { id: 'DESC' },
+                    take: 100,
+                });
+            });
+            it('should handle price, age, id as native numbers', async () => {
+                const filters = { price: 25, age: 3, id: 5 };
+                const findSpyResult = vi.fn().mockResolvedValue([]);
+                listingRepository.find = findSpyResult;
+                await service.getListingsWithFilters(filters as any);
+                expect(findSpyResult).toHaveBeenCalledWith({
+                    where: { price: 25, age: 3, id: 5 },
+                    order: { id: 'DESC' },
+                    take: 100,
+                });
+            });
         });
 
         describe('getListingsByOwner', () => {

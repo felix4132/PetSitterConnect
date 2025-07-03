@@ -72,15 +72,13 @@ GET    /listings/:listingId/applications    # Get applications for listing
 
 ## 🧪 Testing
 
-- **176 Tests** (Unit + E2E + Integration + DTO Validation + Complex Scenarios)
-- **>95% Coverage** overall
-- **100% Coverage** for Controllers, Services, Database
+- **192 Tests** (Unit + E2E + Integration + DTO Validation + Complex Scenarios)
 - **Comprehensive E2E Tests** for CORS, Rate Limiting, APIs
 - **Complex Integration Tests** for multi-step workflows
 - **DTO Validation Tests** for all input parameters
 - **Exception Handling Tests** for robust error handling
-- **Optimized Database Tests** for SQL-level filtering
-- **Real-World Scenario Tests** combining multiple actions
+- **Database Edge Case Tests** for filter validation and type conversion
+- **Error Handling Tests** for SeederService with database failures
 
 ```bash
 npm test              # All tests
@@ -93,13 +91,19 @@ npm run test:watch    # Watch mode for development
 
 ```text
 src/
+├── main.ts           # Application entry point
 ├── app/              # Main application module and configuration
 ├── common/           # Shared utilities and components
+│   └── filters/      # Global exception filters
 ├── domain/           # Database entities and models
+│   ├── applications/ # Application entity
+│   └── listings/     # Listing entity
 ├── infrastructure/   # Database configuration and services
-└── modules/          # Business logic modules
-    ├── listings/     # Listing management
-    └── applications/ # Application workflow
+│   └── database/     # Database module and service
+├── modules/          # Business logic modules
+│   ├── listings/     # Listing management
+│   └── applications/ # Application workflow
+└── seeder/           # Database seeding service
 ```
 
 ## ⚙️ Configuration
