@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Listing } from '../src/domain/listings/listing.entity.js';
 import { DatabaseService } from '../src/infrastructure/database/database.service.js';
+import type { CreateListingDto } from '../src/modules/listings/dto/create-listing.dto.js';
 import { ListingsService } from '../src/modules/listings/listings.service.js';
 
 describe('ListingsService', () => {
@@ -42,12 +43,12 @@ describe('ListingsService', () => {
     describe('create', () => {
         it('should create a new listing', async () => {
             // Arrange
-            const createDto = {
+            const createDto: CreateListingDto = {
                 ownerId: 'owner1',
                 title: 'Test Listing',
                 description: 'test desc',
-                species: 'dog' as const,
-                listingType: 'house-sitting' as const,
+                species: 'dog',
+                listingType: ['house-sitting'],
                 startDate: '2025-07-01',
                 endDate: '2025-07-02',
                 sitterVerified: false,
@@ -58,7 +59,23 @@ describe('ListingsService', () => {
                 feeding: 'twice a day',
                 medication: 'none',
             };
-            const expectedListing: Listing = { id: 1, ...createDto };
+            const expectedListing: Listing = {
+                id: 1,
+                ownerId: createDto.ownerId,
+                title: createDto.title,
+                description: createDto.description,
+                species: createDto.species,
+                listingType: createDto.listingType,
+                startDate: createDto.startDate,
+                endDate: createDto.endDate,
+                sitterVerified: createDto.sitterVerified,
+                price: createDto.price,
+                breed: createDto.breed,
+                age: createDto.age,
+                size: createDto.size,
+                feeding: createDto.feeding,
+                medication: createDto.medication,
+            };
             mockDatabaseService.addListing.mockResolvedValue(expectedListing);
 
             // Act
@@ -82,7 +99,7 @@ describe('ListingsService', () => {
                     title: 'Test 1',
                     description: 'desc 1',
                     species: 'dog',
-                    listingType: 'house-sitting',
+                    listingType: ['house-sitting'],
                     startDate: '2025-07-01',
                     endDate: '2025-07-02',
                     sitterVerified: false,
@@ -117,7 +134,7 @@ describe('ListingsService', () => {
                     title: 'Test 1',
                     description: 'desc 1',
                     species: 'dog',
-                    listingType: 'house-sitting',
+                    listingType: ['house-sitting'],
                     startDate: '2025-07-01',
                     endDate: '2025-07-02',
                     sitterVerified: false,
@@ -134,7 +151,7 @@ describe('ListingsService', () => {
                     title: 'Test 2',
                     description: 'desc 2',
                     species: 'cat',
-                    listingType: 'day-care',
+                    listingType: ['day-care'],
                     startDate: '2025-08-01',
                     endDate: '2025-08-02',
                     sitterVerified: true,
@@ -173,7 +190,7 @@ describe('ListingsService', () => {
                     title: 'Owner Listing',
                     description: 'test desc',
                     species: 'dog' as const,
-                    listingType: 'house-sitting' as const,
+                    listingType: ['house-sitting'],
                     startDate: '2025-07-01',
                     endDate: '2025-07-02',
                     sitterVerified: false,
@@ -211,7 +228,7 @@ describe('ListingsService', () => {
                 title: 'Test 1',
                 description: 'desc 1',
                 species: 'dog',
-                listingType: 'house-sitting',
+                listingType: ['house-sitting'],
                 startDate: '2025-07-01',
                 endDate: '2025-07-02',
                 sitterVerified: false,
@@ -256,7 +273,7 @@ describe('ListingsService', () => {
                 title: 'Test Listing',
                 description: 'test desc',
                 species: 'dog' as const,
-                listingType: 'house-sitting' as const,
+                listingType: ['house-sitting'],
                 startDate: '2025-07-01',
                 endDate: '2025-07-02',
                 sitterVerified: false,

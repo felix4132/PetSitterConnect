@@ -18,14 +18,15 @@ export class Listing {
     @Column('varchar')
     species!: 'dog' | 'cat' | 'bird' | 'exotic' | 'other';
 
-    @Column('varchar')
-    listingType!:
+    @Column('simple-array')
+    listingType!: Array<
         | 'house-sitting'
         | 'drop-in-visit'
         | 'day-care'
         | 'walks'
         | 'feeding'
-        | 'overnight';
+        | 'overnight'
+    >;
 
     @Column('varchar')
     startDate!: string; // ISO date

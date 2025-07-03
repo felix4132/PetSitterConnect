@@ -20,17 +20,62 @@ export class DatabaseService {
         const whereConditions: FindOptionsWhere<Listing> = {};
 
         if (filters) {
-            // Build database-level WHERE conditions
-            Object.entries(filters).forEach(([key, value]) => {
-                (whereConditions as Record<string, unknown>)[key] = value;
-            });
+            // Ensure correct types for boolean and number fields
+            const typeCorrected: Record<string, unknown> = {};
+            for (const [key, value] of Object.entries(filters)) {
+                if (key === 'listingType') {
+                    // Handle listingType filtering - since it's now an array, we need to find listings that contain the specified type
+                    if (typeof value === 'string') {
+                        // For filtering, we need to check if the array contains the specified value
+                        // We'll use a different approach for this - query all and filter in application
+                        // This is because TypeORM simple-array doesn't support IN/CONTAINS operations easily
+                        continue; // Skip adding to whereConditions
+                    }
+                } else if (key === 'sitterVerified') {
+                    // Accept only boolean
+                    if (typeof value !== 'boolean') {
+                        if (value === 'true') typeCorrected[key] = true;
+                        else if (value === 'false') typeCorrected[key] = false;
+                        else continue;
+                    } else {
+                        typeCorrected[key] = value;
+                    }
+                } else if (['price', 'age', 'id'].includes(key)) {
+                    // Accept only numbers
+                    if (typeof value !== 'number') {
+                        const num = Number(value);
+                        if (!isNaN(num)) typeCorrected[key] = num;
+                    } else {
+                        typeCorrected[key] = value;
+                    }
+                } else {
+                    typeCorrected[key] = value;
+                }
+            }
+            Object.assign(whereConditions, typeCorrected);
         }
 
-        return this.listingRepository.find({
+        const listings = await this.listingRepository.find({
             where: whereConditions,
             order: { id: 'DESC' }, // Most recent first
             take: 100, // Pagination limit
         });
+
+        // If listingType filter was specified, filter in application layer
+        if (filters?.listingType && typeof filters.listingType === 'string') {
+            const filterType = filters.listingType as
+                | 'house-sitting'
+                | 'drop-in-visit'
+                | 'day-care'
+                | 'walks'
+                | 'feeding'
+                | 'overnight';
+            return listings.filter((listing) =>
+                listing.listingType.includes(filterType),
+            );
+        }
+
+        return listings;
     }
 
     // Optimized: Direct database query instead of load-all + filter

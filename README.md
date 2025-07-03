@@ -72,13 +72,15 @@ GET    /listings/:listingId/applications    # Get applications for listing
 
 ## 🧪 Testing
 
-- **123 Tests** (Unit + E2E + Integration + DTO Validation)
+- **176 Tests** (Unit + E2E + Integration + DTO Validation + Complex Scenarios)
 - **>95% Coverage** overall
 - **100% Coverage** for Controllers, Services, Database
 - **Comprehensive E2E Tests** for CORS, Rate Limiting, APIs
+- **Complex Integration Tests** for multi-step workflows
 - **DTO Validation Tests** for all input parameters
 - **Exception Handling Tests** for robust error handling
 - **Optimized Database Tests** for SQL-level filtering
+- **Real-World Scenario Tests** combining multiple actions
 
 ```bash
 npm test              # All tests
