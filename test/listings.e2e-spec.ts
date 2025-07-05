@@ -1,5 +1,4 @@
 import type { INestApplication } from '@nestjs/common';
-import { ValidationPipe } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -30,15 +29,6 @@ describe('ListingsController (e2e)', () => {
             imports: [AppModule],
         }).compile();
         app = moduleFixture.createNestApplication();
-
-        // Configure the same validation pipe as in production
-        app.useGlobalPipes(
-            new ValidationPipe({
-                whitelist: true,
-                forbidNonWhitelisted: true,
-                transform: true,
-            }),
-        );
 
         await app.init();
     });

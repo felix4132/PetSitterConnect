@@ -1,4 +1,4 @@
-import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
+import { IsIn, IsNotEmpty, IsString } from 'class-validator';
 import { IdParamsDto } from '../../../shared/dto/base.dto.js';
 import type { ApplicationStatus } from '../../../shared/types/index.js';
 import {
@@ -13,7 +13,7 @@ export class CreateApplicationDto {
 }
 
 export class UpdateApplicationDto {
-    @IsEnum(APPLICATION_STATUS_VALUES, {
+    @IsIn(APPLICATION_STATUS_VALUES, {
         message: VALIDATION_MESSAGES.applicationStatus,
     })
     @IsNotEmpty()

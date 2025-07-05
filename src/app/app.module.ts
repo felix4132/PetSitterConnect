@@ -1,6 +1,6 @@
-import { Module } from '@nestjs/common';
+import { Module, ValidationPipe } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { APP_FILTER, APP_GUARD } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD, APP_PIPE } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { GlobalExceptionFilter } from '../common/filters/global-exception.filter.js';
 import { DatabaseModule } from '../infrastructure/database/database.module.js';
@@ -49,6 +49,16 @@ import { AppService } from './app.service.js';
         {
             provide: APP_FILTER,
             useClass: GlobalExceptionFilter,
+        },
+        {
+            provide: APP_PIPE,
+            useClass: ValidationPipe,
+            useFactory: () =>
+                new ValidationPipe({
+                    whitelist: true,
+                    forbidNonWhitelisted: true,
+                    transform: true,
+                }),
         },
     ],
 })
