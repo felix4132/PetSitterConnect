@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, type FindOptionsWhere } from 'typeorm';
 import { Application } from '../../domain/applications/application.entity.js';
 import { Listing } from '../../domain/listings/listing.entity.js';
+import type { ListingType } from '../../shared/types/index.js';
 
 @Injectable()
 export class DatabaseService {
@@ -24,10 +25,6 @@ export class DatabaseService {
         if (filters) {
             // Process filters with proper type validation
             for (const [key, value] of Object.entries(filters)) {
-                if (value === undefined || value === null) {
-                    continue;
-                }
-
                 switch (key) {
                     case 'listingType':
                         // Handle listingType filtering - requires post-processing
@@ -55,11 +52,14 @@ export class DatabaseService {
                     case 'id':
                         // Ensure numeric type
                         if (typeof value === 'number' && !isNaN(value)) {
-                            (whereConditions as any)[key] = value;
+                            (whereConditions as Record<string, unknown>)[key] =
+                                value;
                         } else if (typeof value === 'string') {
                             const numValue = Number(value);
                             if (!isNaN(numValue)) {
-                                (whereConditions as any)[key] = numValue;
+                                (whereConditions as Record<string, unknown>)[
+                                    key
+                                ] = numValue;
                             }
                             // Invalid string values are ignored
                         }
@@ -77,7 +77,8 @@ export class DatabaseService {
                     case 'medication':
                         // String fields - direct assignment
                         if (typeof value === 'string') {
-                            (whereConditions as any)[key] = value;
+                            (whereConditions as Record<string, unknown>)[key] =
+                                value;
                         }
                         break;
 
@@ -97,7 +98,7 @@ export class DatabaseService {
         // Apply post-processing filters if needed
         if (needsApplicationFiltering && listingTypeFilter) {
             return listings.filter((listing) =>
-                listing.listingType.includes(listingTypeFilter as any),
+                listing.listingType.includes(listingTypeFilter as ListingType),
             );
         }
 

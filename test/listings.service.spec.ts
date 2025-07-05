@@ -103,7 +103,8 @@ describe('ListingsService', () => {
                 description: 'test desc',
                 species: 'dog',
                 listingType: ['walks'],
-                startDate: yesterday.toISOString().split('T')[0], // Past date
+                startDate:
+                    yesterday.toISOString().split('T')[0] ?? '2024-01-01', // Past date
                 endDate: '2025-08-25',
                 sitterVerified: false,
                 price: 25,
