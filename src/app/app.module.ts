@@ -52,7 +52,6 @@ import { AppService } from './app.service.js';
         },
         {
             provide: APP_PIPE,
-            useClass: ValidationPipe,
             useFactory: () =>
                 new ValidationPipe({
                     whitelist: true,
