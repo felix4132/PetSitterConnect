@@ -1,7 +1,7 @@
 import { Transform } from 'class-transformer';
 import {
     IsBoolean,
-    IsEnum,
+    IsIn,
     IsISO8601,
     IsNumber,
     IsOptional,
@@ -36,13 +36,14 @@ export class FindListingsQueryDto extends BaseTransformDto {
     description?: string;
 
     @IsOptional()
-    @IsEnum(SPECIES_VALUES, {
+    @IsIn(SPECIES_VALUES, {
         message: VALIDATION_MESSAGES.species,
     })
     species?: Species;
 
     @IsOptional()
-    @IsEnum(LISTING_TYPE_VALUES, {
+    @IsString({ each: true })
+    @IsIn(LISTING_TYPE_VALUES, {
         each: true,
         message: VALIDATION_MESSAGES.listingType,
     })

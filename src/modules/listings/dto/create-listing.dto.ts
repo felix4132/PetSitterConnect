@@ -3,7 +3,7 @@ import {
     ArrayUnique,
     IsArray,
     IsBoolean,
-    IsEnum,
+    IsIn,
     IsISO8601,
     IsNotEmpty,
     IsNumber,
@@ -31,7 +31,7 @@ export class CreateListingDto {
     @IsNotEmpty()
     description!: string;
 
-    @IsEnum(SPECIES_VALUES, {
+    @IsIn(SPECIES_VALUES, {
         message: VALIDATION_MESSAGES.species,
     })
     species!: Species;
@@ -39,7 +39,8 @@ export class CreateListingDto {
     @IsArray()
     @ArrayNotEmpty()
     @ArrayUnique()
-    @IsEnum(LISTING_TYPE_VALUES, {
+    @IsString({ each: true })
+    @IsIn(LISTING_TYPE_VALUES, {
         each: true,
         message: VALIDATION_MESSAGES.listingType,
     })
