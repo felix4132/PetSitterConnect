@@ -366,16 +366,16 @@ describe('ApplicationsService', () => {
                 otherApplications,
             );
 
-            // Mock logger to check if warning was logged
-            const loggerWarnSpy = vi.spyOn(service['logger'], 'warn');
+            // Mock logger to check if error was logged
+            const loggerErrorSpy = vi.spyOn(service['logger'], 'error');
 
-            // Act
-            const result = await service.updateStatus(applicationId, newStatus);
+            // Act & Assert
+            await expect(service.updateStatus(applicationId, newStatus)).rejects.toThrow(
+                'Application accepted but failed to reject other applications. Please verify listing status.',
+            );
 
-            // Assert
-            expect(result).toEqual(updatedApplication);
-            expect(loggerWarnSpy).toHaveBeenCalledWith(
-                'Failed to reject other applications:',
+            expect(loggerErrorSpy).toHaveBeenCalledWith(
+                'Failed to auto-reject other applications for listing 1:',
                 expect.any(Error),
             );
         });

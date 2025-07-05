@@ -37,7 +37,7 @@ export class ApplicationsService {
                 );
             }
 
-            // Prüfe ob der Sitter bereits eine Application für dieses Listing hat
+            // Check if the sitter has already applied to this listing
             const existingApplications = await this.db.getApplicationsByListing(
                 dto.listingId,
             );
@@ -86,7 +86,26 @@ export class ApplicationsService {
                 );
             }
 
-            // Wenn eine Bewerbung angenommen wird, alle anderen für dasselbe Listing ablehnen
+            // Business rule validation: Check if we can still accept applications
+            if (status === 'accepted') {
+                // Get the listing to check dates
+                const listing = await this.db.getListing(application.listingId);
+                if (listing) {
+                    const today = new Date();
+                    const startDate = new Date(listing.startDate);
+                    
+                    // Check if the listing start date is in the past
+                    if (startDate < today) {
+                        // Revert the status change
+                        await this.db.updateApplicationStatus(id, 'pending');
+                        throw new BadRequestException(
+                            'Cannot accept applications for listings that have already started',
+                        );
+                    }
+                }
+            }
+
+            // Auto-reject other applications when one is accepted
             if (status === 'accepted') {
                 try {
                     const otherApplications =
@@ -94,21 +113,36 @@ export class ApplicationsService {
                             application.listingId,
                         );
 
-                    // Alle anderen Bewerbungen auf 'rejected' setzen
-                    const rejectPromises = otherApplications
-                        .filter(
-                            (app) => app.id !== id && app.status !== 'rejected',
-                        )
-                        .map((app) =>
+                    // Find applications that need to be rejected
+                    const applicationsToReject = otherApplications.filter(
+                        (app) => app.id !== id && app.status === 'pending',
+                    );
+
+                    if (applicationsToReject.length > 0) {
+                        this.logger.log(
+                            `Auto-rejecting ${applicationsToReject.length} other applications for listing ${application.listingId}`,
+                        );
+
+                        // Reject all other pending applications
+                        const rejectPromises = applicationsToReject.map((app) =>
                             this.db.updateApplicationStatus(app.id, 'rejected'),
                         );
 
-                    await Promise.all(rejectPromises);
+                        await Promise.all(rejectPromises);
+                        
+                        this.logger.log(
+                            `Successfully auto-rejected ${applicationsToReject.length} applications`,
+                        );
+                    }
                 } catch (rejectError) {
-                    // Log warning but don't fail the main operation
-                    this.logger.warn(
-                        'Failed to reject other applications:',
+                    // Log error but don't fail the main operation
+                    this.logger.error(
+                        `Failed to auto-reject other applications for listing ${application.listingId}:`,
                         rejectError,
+                    );
+                    // Consider this a critical issue since it could lead to double-booking
+                    throw new InternalServerErrorException(
+                        'Application accepted but failed to reject other applications. Please verify listing status.',
                     );
                 }
             }
@@ -116,7 +150,9 @@ export class ApplicationsService {
             return application;
         } catch (error) {
             // Re-throw known errors
-            if (error instanceof NotFoundException) {
+            if (error instanceof NotFoundException || 
+                error instanceof BadRequestException ||
+                error instanceof InternalServerErrorException) {
                 throw error;
             }
             // Handle unexpected errors

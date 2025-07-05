@@ -21,50 +21,26 @@ export class ListingsService {
 
     async create(dto: CreateListingDto): Promise<Listing> {
         try {
-            // Basic field validation
-            if (!dto.title || dto.title.trim() === '') {
-                throw new BadRequestException('title should not be empty');
-            }
-
-            if (!dto.description || dto.description.trim() === '') {
+            // Note: Basic validation is handled by DTO validators
+            // Add business logic validation here
+            
+            // Validate dates
+            const today = new Date();
+            const startDate = new Date(dto.startDate);
+            const endDate = new Date(dto.endDate);
+            
+            if (startDate < today) {
                 throw new BadRequestException(
-                    'description should not be empty',
+                    'Start date cannot be in the past',
                 );
             }
-
-            if (!dto.ownerId || dto.ownerId.trim() === '') {
-                throw new BadRequestException('ownerId should not be empty');
-            }
-
-            if (dto.price < 0) {
-                throw new BadRequestException('price must not be less than 0');
-            }
-
-            // Additional validation for enum values
-            const validSpecies = ['dog', 'cat', 'bird', 'exotic', 'other'];
-            if (!validSpecies.includes(dto.species)) {
+            
+            if (endDate <= startDate) {
                 throw new BadRequestException(
-                    'species must be one of: dog, cat, bird, exotic, other',
+                    'End date must be after start date',
                 );
             }
-
-            const validListingTypes = [
-                'house-sitting',
-                'drop-in-visit',
-                'day-care',
-                'walks',
-                'feeding',
-                'overnight',
-            ];
-
-            for (const type of dto.listingType) {
-                if (!validListingTypes.includes(type)) {
-                    throw new BadRequestException(
-                        'each listingType must be one of: house-sitting, drop-in-visit, day-care, walks, feeding, overnight',
-                    );
-                }
-            }
-
+            
             const listingData: Omit<Listing, 'id'> = {
                 ownerId: dto.ownerId,
                 title: dto.title,
@@ -102,49 +78,8 @@ export class ListingsService {
 
     async findAll(filters?: Partial<Listing>): Promise<Listing[]> {
         try {
-            // Validate filters if provided
-            if (filters) {
-                if (filters.species) {
-                    const validSpecies = [
-                        'dog',
-                        'cat',
-                        'bird',
-                        'exotic',
-                        'other',
-                    ];
-                    if (!validSpecies.includes(filters.species)) {
-                        throw new BadRequestException(
-                            'species must be one of: dog, cat, bird, exotic, other',
-                        );
-                    }
-                }
-
-                if (filters.listingType) {
-                    const validListingTypes = [
-                        'house-sitting',
-                        'drop-in-visit',
-                        'day-care',
-                        'walks',
-                        'feeding',
-                        'overnight',
-                    ];
-
-                    // Handle single string value or array
-                    const listingTypes = Array.isArray(filters.listingType)
-                        ? filters.listingType
-                        : [filters.listingType];
-
-                    for (const type of listingTypes) {
-                        if (!validListingTypes.includes(type)) {
-                            throw new BadRequestException(
-                                `listingType value "${type}" is not valid. Must be one of: ${validListingTypes.join(', ')}`,
-                            );
-                        }
-                    }
-                }
-            }
-
-            // Optimized: Direct database query instead of load-all + JS-filter
+            // Note: Filter validation is handled by query DTOs
+            // Use optimized database filtering
             if (filters && Object.keys(filters).length > 0) {
                 return await this.db.getListingsWithFilters(filters);
             }
