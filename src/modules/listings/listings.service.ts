@@ -26,6 +26,8 @@ export class ListingsService {
 
             // Validate dates
             const today = new Date();
+            today.setHours(0, 0, 0, 0); // Reset to start of day for accurate comparison
+
             const startDate = new Date(dto.startDate);
             const endDate = new Date(dto.endDate);
 
@@ -42,20 +44,20 @@ export class ListingsService {
             }
 
             const listingData: Omit<Listing, 'id'> = {
-                ownerId: dto.ownerId,
-                title: dto.title,
-                description: dto.description,
+                ownerId: dto.ownerId.trim(),
+                title: dto.title.trim(),
+                description: dto.description.trim(),
                 species: dto.species,
                 listingType: dto.listingType,
                 startDate: dto.startDate,
                 endDate: dto.endDate,
                 sitterVerified: dto.sitterVerified || false,
                 price: dto.price,
-                breed: dto.breed,
+                breed: dto.breed?.trim(),
                 age: dto.age,
-                size: dto.size,
-                feeding: dto.feeding,
-                medication: dto.medication,
+                size: dto.size?.trim(),
+                feeding: dto.feeding?.trim(),
+                medication: dto.medication?.trim(),
             };
             return await this.db.addListing(listingData);
         } catch (error) {

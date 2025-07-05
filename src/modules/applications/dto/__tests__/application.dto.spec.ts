@@ -38,7 +38,7 @@ describe('Application DTOs', () => {
         });
 
         it('should fail validation when sitterId is not a string', async () => {
-            (dto as any).sitterId = 123;
+            Object.assign(dto, { sitterId: 123 });
 
             const errors = await validate(dto);
             expect(errors).toHaveLength(1);
@@ -58,7 +58,8 @@ describe('Application DTOs', () => {
 
             for (const status of validStatuses) {
                 const testDto = new UpdateApplicationDto();
-                testDto.status = status as any;
+                // Type assertion for testing valid enum values
+                Object.assign(testDto, { status });
 
                 const errors = await validate(testDto);
                 expect(errors).toHaveLength(0);
@@ -72,7 +73,7 @@ describe('Application DTOs', () => {
         });
 
         it('should fail validation with invalid status', async () => {
-            dto.status = 'invalid' as any;
+            Object.assign(dto, { status: 'invalid' });
 
             const errors = await validate(dto);
             expect(errors).toHaveLength(1);
@@ -80,7 +81,7 @@ describe('Application DTOs', () => {
         });
 
         it('should fail validation when status is not a string', async () => {
-            (dto as any).status = 123;
+            Object.assign(dto, { status: 123 });
 
             const errors = await validate(dto);
             expect(errors).toHaveLength(1);
@@ -88,7 +89,7 @@ describe('Application DTOs', () => {
         });
 
         it('should fail validation when status is empty string', async () => {
-            dto.status = '' as any;
+            Object.assign(dto, { status: '' });
 
             const errors = await validate(dto);
             expect(errors).toHaveLength(1);
@@ -143,7 +144,7 @@ describe('Application DTOs', () => {
         });
 
         it('should fail validation when id is not a number', async () => {
-            (dto as any).id = 'not-a-number';
+            Object.assign(dto, { id: 'not-a-number' });
 
             const errors = await validate(dto);
             expect(errors).toHaveLength(1);
@@ -219,7 +220,7 @@ describe('Application DTOs', () => {
         });
 
         it('should fail validation when sitterId is not a string', async () => {
-            (dto as any).sitterId = 123;
+            Object.assign(dto, { sitterId: 123 });
 
             const errors = await validate(dto);
             expect(errors).toHaveLength(1);

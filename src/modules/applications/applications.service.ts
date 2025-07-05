@@ -25,8 +25,9 @@ export class ApplicationsService {
 
     async apply(dto: ApplyDto): Promise<Application> {
         try {
-            // Additional validation for empty string
-            if (!dto.sitterId || dto.sitterId.trim() === '') {
+            // Additional validation and sanitization for sitterId
+            const sanitizedSitterId = dto.sitterId.trim();
+            if (!sanitizedSitterId) {
                 throw new BadRequestException('sitterId cannot be empty');
             }
 
@@ -42,18 +43,18 @@ export class ApplicationsService {
                 dto.listingId,
             );
             const existingApplication = existingApplications.find(
-                (app) => app.sitterId === dto.sitterId,
+                (app) => app.sitterId === sanitizedSitterId,
             );
 
             if (existingApplication) {
                 throw new BadRequestException(
-                    `Sitter ${dto.sitterId} has already applied to listing ${dto.listingId.toString()}`,
+                    `Sitter ${sanitizedSitterId} has already applied to listing ${dto.listingId.toString()}`,
                 );
             }
 
             const application = await this.db.addApplication({
                 listingId: dto.listingId,
-                sitterId: dto.sitterId,
+                sitterId: sanitizedSitterId,
             });
             return application;
         } catch (error) {
@@ -92,6 +93,7 @@ export class ApplicationsService {
                 const listing = await this.db.getListing(application.listingId);
                 if (listing) {
                     const today = new Date();
+                    today.setHours(0, 0, 0, 0); // Reset to start of day for accurate comparison
                     const startDate = new Date(listing.startDate);
 
                     // Check if the listing start date is in the past
