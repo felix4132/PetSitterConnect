@@ -8,14 +8,17 @@ import {
     IsString,
     Min,
 } from 'class-validator';
+import { BaseTransformDto } from '../../../shared/dto/base.dto.js';
+import type { Species, ListingType } from '../../../shared/types/index.js';
+import {
+    SPECIES_VALUES,
+    LISTING_TYPE_VALUES,
+    VALIDATION_MESSAGES,
+} from '../../../shared/types/index.js';
 
-export class FindListingsQueryDto {
+export class FindListingsQueryDto extends BaseTransformDto {
     @IsOptional()
-    @Transform(({ value }: { value: string }) => {
-        if (typeof value !== 'string') return value;
-        const parsed = parseInt(value, 10);
-        return isNaN(parsed) ? value : parsed; // Lass Validierung den Fehler handhaben
-    })
+    @Transform(({ value }) => FindListingsQueryDto.transformToNumber(value))
     @IsNumber()
     @Min(1)
     id?: number;
@@ -33,35 +36,17 @@ export class FindListingsQueryDto {
     description?: string;
 
     @IsOptional()
-    @IsEnum(['dog', 'cat', 'bird', 'exotic', 'other'], {
-        message: 'species must be one of: dog, cat, bird, exotic, other',
+    @IsEnum(SPECIES_VALUES, {
+        message: VALIDATION_MESSAGES.species,
     })
-    species?: 'dog' | 'cat' | 'bird' | 'exotic' | 'other';
+    species?: Species;
 
     @IsOptional()
-    @IsEnum(
-        [
-            'house-sitting',
-            'drop-in-visit',
-            'day-care',
-            'walks',
-            'feeding',
-            'overnight',
-        ],
-        {
-            each: true,
-            message:
-                'each listingType must be one of: house-sitting, drop-in-visit, day-care, walks, feeding, overnight',
-        },
-    )
-    listingType?: Array<
-        | 'house-sitting'
-        | 'drop-in-visit'
-        | 'day-care'
-        | 'walks'
-        | 'feeding'
-        | 'overnight'
-    >;
+    @IsEnum(LISTING_TYPE_VALUES, {
+        each: true,
+        message: VALIDATION_MESSAGES.listingType,
+    })
+    listingType?: ListingType[];
 
     @IsOptional()
     @IsISO8601()
@@ -72,16 +57,12 @@ export class FindListingsQueryDto {
     endDate?: string;
 
     @IsOptional()
-    @Transform(({ value }: { value: string }) => value === 'true')
+    @Transform(({ value }) => FindListingsQueryDto.transformToBoolean(value))
     @IsBoolean()
     sitterVerified?: boolean;
 
     @IsOptional()
-    @Transform(({ value }: { value: string }) => {
-        if (typeof value !== 'string') return value;
-        const parsed = parseFloat(value);
-        return isNaN(parsed) ? value : parsed; // Lass Validierung den Fehler handhaben
-    })
+    @Transform(({ value }) => FindListingsQueryDto.transformToFloat(value))
     @IsNumber()
     @Min(0)
     price?: number;
@@ -91,11 +72,7 @@ export class FindListingsQueryDto {
     breed?: string;
 
     @IsOptional()
-    @Transform(({ value }: { value: string }) => {
-        if (typeof value !== 'string') return value;
-        const parsed = parseInt(value, 10);
-        return isNaN(parsed) ? value : parsed; // Lass Validierung den Fehler handhaben
-    })
+    @Transform(({ value }) => FindListingsQueryDto.transformToNumber(value))
     @IsNumber()
     @Min(0)
     age?: number;
