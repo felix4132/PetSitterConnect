@@ -36,18 +36,20 @@ export class DatabaseService {
                             needsApplicationFiltering = true;
                         }
                         break;
-                    
+
                     case 'sitterVerified':
                         // Ensure boolean type
                         if (typeof value === 'boolean') {
                             whereConditions.sitterVerified = value;
                         } else if (typeof value === 'string') {
-                            if (value === 'true') whereConditions.sitterVerified = true;
-                            else if (value === 'false') whereConditions.sitterVerified = false;
+                            if (value === 'true')
+                                whereConditions.sitterVerified = true;
+                            else if (value === 'false')
+                                whereConditions.sitterVerified = false;
                             // Invalid string values are ignored
                         }
                         break;
-                    
+
                     case 'price':
                     case 'age':
                     case 'id':
@@ -62,7 +64,7 @@ export class DatabaseService {
                             // Invalid string values are ignored
                         }
                         break;
-                    
+
                     case 'species':
                     case 'ownerId':
                     case 'title':
@@ -78,7 +80,7 @@ export class DatabaseService {
                             (whereConditions as any)[key] = value;
                         }
                         break;
-                    
+
                     default:
                         // Unknown fields are ignored for security
                         break;

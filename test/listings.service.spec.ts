@@ -50,7 +50,7 @@ describe('ListingsService', () => {
                 species: 'dog',
                 listingType: ['walks'],
                 startDate: '2025-08-15', // Future date
-                endDate: '2025-08-25',   // Future date
+                endDate: '2025-08-25', // Future date
                 sitterVerified: false,
                 price: 25,
             };

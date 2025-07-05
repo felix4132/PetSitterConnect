@@ -93,7 +93,7 @@ export class ApplicationsService {
                 if (listing) {
                     const today = new Date();
                     const startDate = new Date(listing.startDate);
-                    
+
                     // Check if the listing start date is in the past
                     if (startDate < today) {
                         // Revert the status change
@@ -129,7 +129,7 @@ export class ApplicationsService {
                         );
 
                         await Promise.all(rejectPromises);
-                        
+
                         this.logger.log(
                             `Successfully auto-rejected ${applicationsToReject.length} applications`,
                         );
@@ -150,9 +150,11 @@ export class ApplicationsService {
             return application;
         } catch (error) {
             // Re-throw known errors
-            if (error instanceof NotFoundException || 
+            if (
+                error instanceof NotFoundException ||
                 error instanceof BadRequestException ||
-                error instanceof InternalServerErrorException) {
+                error instanceof InternalServerErrorException
+            ) {
                 throw error;
             }
             // Handle unexpected errors

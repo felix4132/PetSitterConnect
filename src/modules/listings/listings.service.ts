@@ -23,24 +23,24 @@ export class ListingsService {
         try {
             // Note: Basic validation is handled by DTO validators
             // Add business logic validation here
-            
+
             // Validate dates
             const today = new Date();
             const startDate = new Date(dto.startDate);
             const endDate = new Date(dto.endDate);
-            
+
             if (startDate < today) {
                 throw new BadRequestException(
                     'Start date cannot be in the past',
                 );
             }
-            
+
             if (endDate <= startDate) {
                 throw new BadRequestException(
                     'End date must be after start date',
                 );
             }
-            
+
             const listingData: Omit<Listing, 'id'> = {
                 ownerId: dto.ownerId,
                 title: dto.title,

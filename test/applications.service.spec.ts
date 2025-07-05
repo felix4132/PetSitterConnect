@@ -370,7 +370,9 @@ describe('ApplicationsService', () => {
             const loggerErrorSpy = vi.spyOn(service['logger'], 'error');
 
             // Act & Assert
-            await expect(service.updateStatus(applicationId, newStatus)).rejects.toThrow(
+            await expect(
+                service.updateStatus(applicationId, newStatus),
+            ).rejects.toThrow(
                 'Application accepted but failed to reject other applications. Please verify listing status.',
             );
 
