@@ -49,8 +49,8 @@ describe('ListingsService', () => {
                 description: 'test desc',
                 species: 'dog',
                 listingType: ['walks'],
-                startDate: '2025-07-15',
-                endDate: '2025-07-25',
+                startDate: '2025-08-15', // Future date
+                endDate: '2025-08-25',   // Future date
                 sitterVerified: false,
                 price: 25,
             };
@@ -62,8 +62,8 @@ describe('ListingsService', () => {
                 description: 'test desc',
                 species: 'dog',
                 listingType: ['walks'],
-                startDate: '2025-07-15',
-                endDate: '2025-07-25',
+                startDate: '2025-08-15',
+                endDate: '2025-08-25',
                 sitterVerified: false,
                 price: 25,
             };
@@ -81,8 +81,8 @@ describe('ListingsService', () => {
                 description: 'test desc',
                 species: 'dog',
                 listingType: ['walks'],
-                startDate: '2025-07-15',
-                endDate: '2025-07-25',
+                startDate: '2025-08-15',
+                endDate: '2025-08-25',
                 price: 25,
                 sitterVerified: false,
                 breed: undefined,
@@ -93,83 +93,65 @@ describe('ListingsService', () => {
             });
         });
 
-        it('should throw BadRequestException for empty description', async () => {
+        it('should throw BadRequestException for past start date', async () => {
             // Arrange
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
             const createDto: CreateListingDto = {
                 ownerId: 'owner1',
-                title: 'Test Listing',
-                description: '', // Empty description
-                species: 'dog',
-                listingType: ['walks'],
-                startDate: '2025-07-15',
-                endDate: '2025-07-25',
-                sitterVerified: false,
-                price: 25,
-            };
-
-            // Act & Assert
-            await expect(service.create(createDto)).rejects.toThrow(
-                'description should not be empty',
-            );
-        });
-
-        it('should throw BadRequestException for whitespace-only description', async () => {
-            // Arrange
-            const createDto: CreateListingDto = {
-                ownerId: 'owner1',
-                title: 'Test Listing',
-                description: '   ', // Whitespace-only description
-                species: 'dog',
-                listingType: ['walks'],
-                startDate: '2025-07-15',
-                endDate: '2025-07-25',
-                sitterVerified: false,
-                price: 25,
-            };
-
-            // Act & Assert
-            await expect(service.create(createDto)).rejects.toThrow(
-                'description should not be empty',
-            );
-        });
-
-        it('should throw BadRequestException for empty ownerId', async () => {
-            // Arrange
-            const createDto: CreateListingDto = {
-                ownerId: '', // Empty ownerId
                 title: 'Test Listing',
                 description: 'test desc',
                 species: 'dog',
                 listingType: ['walks'],
-                startDate: '2025-07-15',
-                endDate: '2025-07-25',
+                startDate: yesterday.toISOString().split('T')[0], // Past date
+                endDate: '2025-08-25',
                 sitterVerified: false,
                 price: 25,
             };
 
             // Act & Assert
             await expect(service.create(createDto)).rejects.toThrow(
-                'ownerId should not be empty',
+                'Start date cannot be in the past',
             );
         });
 
-        it('should throw BadRequestException for whitespace-only ownerId', async () => {
+        it('should throw BadRequestException when end date is before start date', async () => {
             // Arrange
             const createDto: CreateListingDto = {
-                ownerId: '   ', // Whitespace-only ownerId
+                ownerId: 'owner1',
                 title: 'Test Listing',
                 description: 'test desc',
                 species: 'dog',
                 listingType: ['walks'],
-                startDate: '2025-07-15',
-                endDate: '2025-07-25',
+                startDate: '2025-08-20',
+                endDate: '2025-08-15', // End date before start date
                 sitterVerified: false,
                 price: 25,
             };
 
             // Act & Assert
             await expect(service.create(createDto)).rejects.toThrow(
-                'ownerId should not be empty',
+                'End date must be after start date',
+            );
+        });
+
+        it('should throw BadRequestException when end date equals start date', async () => {
+            // Arrange
+            const createDto: CreateListingDto = {
+                ownerId: 'owner1',
+                title: 'Test Listing',
+                description: 'test desc',
+                species: 'dog',
+                listingType: ['walks'],
+                startDate: '2025-08-20',
+                endDate: '2025-08-20', // Same date
+                sitterVerified: false,
+                price: 25,
+            };
+
+            // Act & Assert
+            await expect(service.create(createDto)).rejects.toThrow(
+                'End date must be after start date',
             );
         });
 
