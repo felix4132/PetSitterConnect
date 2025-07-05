@@ -3,8 +3,12 @@ import { NestFactory } from '@nestjs/core';
 import helmet from 'helmet';
 import 'reflect-metadata';
 import { AppModule } from './app/app.module.js';
+import { validateConfig } from './config/index.js';
 
 async function bootstrap() {
+    // Validate configuration before starting the application
+    validateConfig();
+    
     const app = await NestFactory.create(AppModule);
     const logger = new Logger('Bootstrap');
 
