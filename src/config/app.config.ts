@@ -55,13 +55,15 @@ export function loadAppConfig(): AppConfig {
 export function validateConfig(): void {
     const errors: string[] = [];
     const warnings: string[] = [];
-    
+
     // Validate NODE_ENV
     const nodeEnv = process.env.NODE_ENV;
     if (!nodeEnv) {
         warnings.push('NODE_ENV is not set, defaulting to development');
     } else if (!['development', 'production', 'test'].includes(nodeEnv)) {
-        warnings.push(`NODE_ENV value '${nodeEnv}' is not standard. Use: development, production, or test`);
+        warnings.push(
+            `NODE_ENV value '${nodeEnv}' is not standard. Use: development, production, or test`,
+        );
     }
 
     // Validate PORT
@@ -69,7 +71,9 @@ export function validateConfig(): void {
     if (port) {
         const portNum = parseInt(port, 10);
         if (isNaN(portNum) || portNum < 1 || portNum > 65535) {
-            errors.push(`PORT must be a valid number between 1 and 65535, got: ${port}`);
+            errors.push(
+                `PORT must be a valid number between 1 and 65535, got: ${port}`,
+            );
         }
     }
 
@@ -78,7 +82,9 @@ export function validateConfig(): void {
     if (rateLimitTtl) {
         const ttl = parseInt(rateLimitTtl, 10);
         if (isNaN(ttl) || ttl < 1000) {
-            errors.push(`RATE_LIMIT_TTL must be a number >= 1000 (1 second), got: ${rateLimitTtl}`);
+            errors.push(
+                `RATE_LIMIT_TTL must be a number >= 1000 (1 second), got: ${rateLimitTtl}`,
+            );
         }
     }
 
@@ -86,23 +92,32 @@ export function validateConfig(): void {
     if (rateLimitLimit) {
         const limit = parseInt(rateLimitLimit, 10);
         if (isNaN(limit) || limit < 1) {
-            errors.push(`RATE_LIMIT_LIMIT must be a positive number, got: ${rateLimitLimit}`);
+            errors.push(
+                `RATE_LIMIT_LIMIT must be a positive number, got: ${rateLimitLimit}`,
+            );
         }
     }
 
     // Production-specific validations
     if (nodeEnv === 'production') {
         if (!process.env.ALLOWED_ORIGINS) {
-            errors.push('ALLOWED_ORIGINS must be set in production for security');
+            errors.push(
+                'ALLOWED_ORIGINS must be set in production for security',
+            );
         } else {
             const origins = process.env.ALLOWED_ORIGINS.split(',');
-            const invalidOrigins = origins.filter(origin => {
+            const invalidOrigins = origins.filter((origin) => {
                 const trimmed = origin.trim();
-                return !trimmed.startsWith('http://') && !trimmed.startsWith('https://');
+                return (
+                    !trimmed.startsWith('http://') &&
+                    !trimmed.startsWith('https://')
+                );
             });
-            
+
             if (invalidOrigins.length > 0) {
-                errors.push(`Invalid origins in ALLOWED_ORIGINS: ${invalidOrigins.join(', ')}. Origins must start with http:// or https://`);
+                errors.push(
+                    `Invalid origins in ALLOWED_ORIGINS: ${invalidOrigins.join(', ')}. Origins must start with http:// or https://`,
+                );
             }
         }
     }
@@ -116,7 +131,7 @@ export function validateConfig(): void {
     if (warnings.length > 0) {
         // eslint-disable-next-line no-console
         console.warn('Configuration warnings:');
-        warnings.forEach(warning => {
+        warnings.forEach((warning) => {
             // eslint-disable-next-line no-console
             console.warn(`  - ${warning}`);
         });
@@ -126,7 +141,7 @@ export function validateConfig(): void {
     if (errors.length > 0) {
         // eslint-disable-next-line no-console
         console.error('Configuration errors:');
-        errors.forEach(error => {
+        errors.forEach((error) => {
             // eslint-disable-next-line no-console
             console.error(`  - ${error}`);
         });

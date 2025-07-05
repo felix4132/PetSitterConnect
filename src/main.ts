@@ -8,7 +8,7 @@ import { validateConfig } from './config/index.js';
 async function bootstrap() {
     // Validate configuration before starting the application
     validateConfig();
-    
+
     const app = await NestFactory.create(AppModule);
     const logger = new Logger('Bootstrap');
 
