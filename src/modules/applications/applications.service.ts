@@ -120,7 +120,7 @@ export class ApplicationsService {
 
                     if (applicationsToReject.length > 0) {
                         this.logger.log(
-                            `Auto-rejecting ${applicationsToReject.length} other applications for listing ${application.listingId}`,
+                            `Auto-rejecting ${String(applicationsToReject.length)} other applications for listing ${String(application.listingId)}`,
                         );
 
                         // Reject all other pending applications
@@ -131,13 +131,13 @@ export class ApplicationsService {
                         await Promise.all(rejectPromises);
 
                         this.logger.log(
-                            `Successfully auto-rejected ${applicationsToReject.length} applications`,
+                            `Successfully auto-rejected ${String(applicationsToReject.length)} applications`,
                         );
                     }
                 } catch (rejectError) {
                     // Log error but don't fail the main operation
                     this.logger.error(
-                        `Failed to auto-reject other applications for listing ${application.listingId}:`,
+                        `Failed to auto-reject other applications for listing ${String(application.listingId)}:`,
                         rejectError,
                     );
                     // Consider this a critical issue since it could lead to double-booking
