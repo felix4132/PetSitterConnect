@@ -123,8 +123,26 @@ export function validateConfig(): void {
     }
 
     // Database configuration warnings
-    if (nodeEnv === 'production' && !process.env.DB_PATH) {
-        warnings.push('DB_PATH is not set in production, using default path');
+    if (nodeEnv === 'production') {
+        if (!process.env.DB_PATH) {
+            warnings.push(
+                'DB_PATH is not set in production, using default path',
+            );
+        }
+
+        // Warn about database synchronization in production
+        if (process.env.DB_SYNCHRONIZE === 'true') {
+            warnings.push(
+                'DB_SYNCHRONIZE is enabled in production. This can cause data loss!',
+            );
+        }
+
+        // Warn about database logging in production
+        if (process.env.DB_LOGGING === 'true') {
+            warnings.push(
+                'DB_LOGGING is enabled in production. This may impact performance and expose sensitive data.',
+            );
+        }
     }
 
     // Log warnings

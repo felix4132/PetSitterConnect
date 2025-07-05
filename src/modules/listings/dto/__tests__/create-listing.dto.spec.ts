@@ -1,6 +1,7 @@
 import { validate } from 'class-validator';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { CreateListingDto } from '../create-listing.dto.js';
+import type { Species, ListingType } from '../../../../shared/types/index.js';
 
 describe('CreateListingDto', () => {
     let dto: CreateListingDto;
@@ -100,7 +101,7 @@ describe('CreateListingDto', () => {
             dto.ownerId = 'owner123';
             dto.title = 'Pet Sitting Job';
             dto.description = 'Looking for a pet sitter';
-            dto.species = 'invalid' as any;
+            dto.species = 'invalid' as Species;
             dto.listingType = ['house-sitting'];
             dto.startDate = '2025-08-01';
             dto.endDate = '2025-08-05';
@@ -120,7 +121,7 @@ describe('CreateListingDto', () => {
                 testDto.ownerId = 'owner123';
                 testDto.title = 'Pet Sitting Job';
                 testDto.description = 'Looking for a pet sitter';
-                testDto.species = species as any;
+                testDto.species = species as Species;
                 testDto.listingType = ['house-sitting'];
                 testDto.startDate = '2025-08-01';
                 testDto.endDate = '2025-08-05';
@@ -148,7 +149,7 @@ describe('CreateListingDto', () => {
                 testDto.title = 'Pet Sitting Job';
                 testDto.description = 'Looking for a pet sitter';
                 testDto.species = 'dog';
-                testDto.listingType = [listingType as any];
+                testDto.listingType = [listingType as ListingType];
                 testDto.startDate = '2025-08-01';
                 testDto.endDate = '2025-08-05';
                 testDto.sitterVerified = true;
@@ -280,7 +281,10 @@ describe('CreateListingDto', () => {
             dto.title = 'Pet Sitting Job';
             dto.description = 'Looking for a pet sitter';
             dto.species = 'dog';
-            dto.listingType = ['house-sitting', 'invalid-type'] as any;
+            dto.listingType = [
+                'house-sitting',
+                'invalid-type',
+            ] as ListingType[];
             dto.startDate = '2025-08-01';
             dto.endDate = '2025-08-05';
             dto.sitterVerified = true;
