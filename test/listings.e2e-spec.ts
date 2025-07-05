@@ -11,8 +11,8 @@ const exampleListing = {
     description: 'test desc',
     species: 'dog' as const,
     listingType: ['house-sitting'],
-    startDate: '2025-07-01',
-    endDate: '2025-07-02',
+    startDate: '2025-08-01', // Future date
+    endDate: '2025-08-02',   // Future date
     sitterVerified: false,
     price: 10,
     breed: 'Bulldog',

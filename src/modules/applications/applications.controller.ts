@@ -7,7 +7,6 @@ import {
     ParseIntPipe,
     Patch,
     Post,
-    ValidationPipe,
 } from '@nestjs/common';
 import type { Application } from '../../domain/applications/application.entity.js';
 import { ApplicationsService } from './applications.service.js';
@@ -26,14 +25,7 @@ export class ApplicationsController {
     @Post('listings/:id/applications')
     async apply(
         @Param('id', ParseIntPipe) id: number,
-        @Body(
-            new ValidationPipe({
-                whitelist: true,
-                forbidNonWhitelisted: true,
-                transform: true,
-            }),
-        )
-        body: CreateApplicationDto,
+        @Body() body: CreateApplicationDto,
     ): Promise<Application> {
         return this.applicationsService.apply({
             listingId: id,
@@ -44,14 +36,7 @@ export class ApplicationsController {
     @Patch('applications/:id')
     async updateStatus(
         @Param('id', ParseIntPipe) id: number,
-        @Body(
-            new ValidationPipe({
-                whitelist: true,
-                forbidNonWhitelisted: true,
-                transform: true,
-            }),
-        )
-        body: UpdateApplicationDto,
+        @Body() body: UpdateApplicationDto,
     ): Promise<Application> {
         return this.applicationsService.updateStatus(id, body.status);
     }
