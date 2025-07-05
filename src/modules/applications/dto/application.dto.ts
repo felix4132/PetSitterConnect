@@ -1,5 +1,10 @@
-import { Transform } from 'class-transformer';
-import { IsEnum, IsNotEmpty, IsNumber, IsString, Min } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
+import { IdParamsDto } from '../../../shared/dto/base.dto.js';
+import type { ApplicationStatus } from '../../../shared/types/index.js';
+import {
+    APPLICATION_STATUS_VALUES,
+    VALIDATION_MESSAGES,
+} from '../../../shared/types/index.js';
 
 export class CreateApplicationDto {
     @IsString()
@@ -8,27 +13,16 @@ export class CreateApplicationDto {
 }
 
 export class UpdateApplicationDto {
-    @IsEnum(['pending', 'accepted', 'rejected'], {
-        message:
-            'status must be one of the following values: pending, accepted, rejected',
+    @IsEnum(APPLICATION_STATUS_VALUES, {
+        message: VALIDATION_MESSAGES.applicationStatus,
     })
     @IsNotEmpty()
-    status!: 'pending' | 'accepted' | 'rejected';
+    status!: ApplicationStatus;
 }
 
-export class ApplicationParamsDto {
-    @IsNumber()
-    @Min(1)
-    @Transform(({ value }) => parseInt(value as string))
-    id!: number;
-}
+export class ApplicationParamsDto extends IdParamsDto {}
 
-export class ListingParamsDto {
-    @IsNumber()
-    @Min(1)
-    @Transform(({ value }) => parseInt(value as string))
-    id!: number;
-}
+export class ListingParamsDto extends IdParamsDto {}
 
 export class SitterParamsDto {
     @IsString()

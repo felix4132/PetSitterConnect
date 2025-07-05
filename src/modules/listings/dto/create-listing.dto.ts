@@ -11,6 +11,12 @@ import {
     IsString,
     Min,
 } from 'class-validator';
+import type { Species, ListingType } from '../../../shared/types/index.js';
+import {
+    SPECIES_VALUES,
+    LISTING_TYPE_VALUES,
+    VALIDATION_MESSAGES,
+} from '../../../shared/types/index.js';
 
 export class CreateListingDto {
     @IsString()
@@ -25,37 +31,19 @@ export class CreateListingDto {
     @IsNotEmpty()
     description!: string;
 
-    @IsEnum(['dog', 'cat', 'bird', 'exotic', 'other'], {
-        message: 'species must be one of: dog, cat, bird, exotic, other',
+    @IsEnum(SPECIES_VALUES, {
+        message: VALIDATION_MESSAGES.species,
     })
-    species!: 'dog' | 'cat' | 'bird' | 'exotic' | 'other';
+    species!: Species;
 
     @IsArray()
     @ArrayNotEmpty()
     @ArrayUnique()
-    @IsEnum(
-        [
-            'house-sitting',
-            'drop-in-visit',
-            'day-care',
-            'walks',
-            'feeding',
-            'overnight',
-        ],
-        {
-            each: true,
-            message:
-                'each listingType must be one of: house-sitting, drop-in-visit, day-care, walks, feeding, overnight',
-        },
-    )
-    listingType!: Array<
-        | 'house-sitting'
-        | 'drop-in-visit'
-        | 'day-care'
-        | 'walks'
-        | 'feeding'
-        | 'overnight'
-    >;
+    @IsEnum(LISTING_TYPE_VALUES, {
+        each: true,
+        message: VALIDATION_MESSAGES.listingType,
+    })
+    listingType!: ListingType[];
 
     @IsISO8601()
     startDate!: string;
