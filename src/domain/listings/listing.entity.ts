@@ -1,5 +1,6 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Application } from '../applications/application.entity.js';
+import type { Species, ListingType } from '../../shared/types/index.js';
 
 @Entity('listings')
 export class Listing {
@@ -16,17 +17,10 @@ export class Listing {
     description!: string;
 
     @Column('varchar')
-    species!: 'dog' | 'cat' | 'bird' | 'exotic' | 'other';
+    species!: Species;
 
     @Column('simple-array')
-    listingType!: Array<
-        | 'house-sitting'
-        | 'drop-in-visit'
-        | 'day-care'
-        | 'walks'
-        | 'feeding'
-        | 'overnight'
-    >;
+    listingType!: ListingType[];
 
     @Column('varchar')
     startDate!: string; // ISO date
