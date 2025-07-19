@@ -6,9 +6,10 @@ TypeScript and comprehensive test coverage.
 ## 🚀 Features
 
 - **REST API** for listings and applications with optimized database access
-- **TypeScript 5.8** with strict typing
+- **TypeScript 5.8** with strict typing and centralized shared types
 - **TypeORM** with SQLite database and SQL-level filtering
-- **Validation** with class-validator/class-transformer
+- **Validation** with class-validator/class-transformer and reusable base DTOs
+- **Configuration Management** with type-safe environment validation
 - **Rate Limiting** and CORS protection
 - **Security** with Helmet (XSS, CSRF, etc.)
 - **Global Exception Handling** for better error handling
@@ -72,7 +73,7 @@ GET    /listings/:listingId/applications    # Get applications for listing
 
 ## 🧪 Testing
 
-- **212 Tests** (Unit + E2E + Integration + DTO Validation + Complex Scenarios)
+- **269 Tests** (Unit + E2E + Integration + DTO Validation + Complex Scenarios)
 - **Comprehensive E2E Tests** for CORS, Rate Limiting, APIs
 - **Complex Integration Tests** for multi-step workflows
 - **DTO Validation Tests** for all input parameters
@@ -93,6 +94,10 @@ npm run test:watch    # Watch mode for development
 src/
 ├── main.ts           # Application entry point
 ├── app/              # Main application module and configuration
+├── shared/           # Shared utilities, types, and base classes
+│   ├── types/        # Centralized type definitions (Species, ListingType, etc.)
+│   └── dto/          # Reusable base DTO classes
+├── config/           # Configuration management and validation
 ├── common/           # Shared utilities and components
 │   ├── filters/      # Global exception filters
 │   └── validators/   # Custom validation classes
@@ -103,7 +108,13 @@ src/
 │   └── database/     # Database module and service
 ├── modules/          # Business logic modules
 │   ├── listings/     # Listing management
+│   │   ├── dto/      # DTOs with co-located tests
+│   │   │   └── __tests__/  # DTO validation tests
+│   │   └── index.ts  # Barrel exports for clean imports
 │   └── applications/ # Application workflow
+│       ├── dto/      # DTOs with co-located tests
+│       │   └── __tests__/  # DTO validation tests
+│       └── index.ts  # Barrel exports for clean imports
 └── seeder/           # Database seeding service
 ```
 

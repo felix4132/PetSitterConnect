@@ -6,6 +6,8 @@ import {
     PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Listing } from '../listings/listing.entity.js';
+import type { ApplicationStatus } from '../../shared/types/index.js';
+import { APPLICATION_STATUS_VALUES } from '../../shared/types/index.js';
 
 @Entity('applications')
 export class Application {
@@ -21,9 +23,9 @@ export class Application {
     @Column({
         type: 'varchar',
         default: 'pending',
-        enum: ['pending', 'accepted', 'rejected'],
+        enum: APPLICATION_STATUS_VALUES,
     })
-    status!: 'pending' | 'accepted' | 'rejected';
+    status!: ApplicationStatus;
 
     @ManyToOne(() => Listing, (listing) => listing.applications, {
         onDelete: 'CASCADE',

@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, type FindOptionsWhere } from 'typeorm';
 import { Application } from '../../domain/applications/application.entity.js';
 import { Listing } from '../../domain/listings/listing.entity.js';
+import type { ListingType } from '../../shared/types/index.js';
 
 @Injectable()
 export class DatabaseService {
@@ -18,41 +19,74 @@ export class DatabaseService {
         filters?: Partial<Listing>,
     ): Promise<Listing[]> {
         const whereConditions: FindOptionsWhere<Listing> = {};
+        let needsApplicationFiltering = false;
+        let listingTypeFilter: string | undefined;
 
         if (filters) {
-            // Ensure correct types for boolean and number fields
-            const typeCorrected: Record<string, unknown> = {};
+            // Process filters with proper type validation
             for (const [key, value] of Object.entries(filters)) {
-                if (key === 'listingType') {
-                    // Handle listingType filtering - since it's now an array, we need to find listings that contain the specified type
-                    if (typeof value === 'string') {
-                        // For filtering, we need to check if the array contains the specified value
-                        // We'll use a different approach for this - query all and filter in application
-                        // This is because TypeORM simple-array doesn't support IN/CONTAINS operations easily
-                        continue; // Skip adding to whereConditions
-                    }
-                } else if (key === 'sitterVerified') {
-                    // Accept only boolean
-                    if (typeof value !== 'boolean') {
-                        if (value === 'true') typeCorrected[key] = true;
-                        else if (value === 'false') typeCorrected[key] = false;
-                        else continue;
-                    } else {
-                        typeCorrected[key] = value;
-                    }
-                } else if (['price', 'age', 'id'].includes(key)) {
-                    // Accept only numbers
-                    if (typeof value !== 'number') {
-                        const num = Number(value);
-                        if (!isNaN(num)) typeCorrected[key] = num;
-                    } else {
-                        typeCorrected[key] = value;
-                    }
-                } else {
-                    typeCorrected[key] = value;
+                switch (key) {
+                    case 'listingType':
+                        // Handle listingType filtering - requires post-processing
+                        if (typeof value === 'string') {
+                            listingTypeFilter = value;
+                            needsApplicationFiltering = true;
+                        }
+                        break;
+
+                    case 'sitterVerified':
+                        // Ensure boolean type
+                        if (typeof value === 'boolean') {
+                            whereConditions.sitterVerified = value;
+                        } else if (typeof value === 'string') {
+                            if (value === 'true')
+                                whereConditions.sitterVerified = true;
+                            else if (value === 'false')
+                                whereConditions.sitterVerified = false;
+                            // Invalid string values are ignored
+                        }
+                        break;
+
+                    case 'price':
+                    case 'age':
+                    case 'id':
+                        // Ensure numeric type
+                        if (typeof value === 'number' && !isNaN(value)) {
+                            (whereConditions as Record<string, unknown>)[key] =
+                                value;
+                        } else if (typeof value === 'string') {
+                            const numValue = Number(value);
+                            if (!isNaN(numValue)) {
+                                (whereConditions as Record<string, unknown>)[
+                                    key
+                                ] = numValue;
+                            }
+                            // Invalid string values are ignored
+                        }
+                        break;
+
+                    case 'species':
+                    case 'ownerId':
+                    case 'title':
+                    case 'description':
+                    case 'startDate':
+                    case 'endDate':
+                    case 'breed':
+                    case 'size':
+                    case 'feeding':
+                    case 'medication':
+                        // String fields - direct assignment
+                        if (typeof value === 'string') {
+                            (whereConditions as Record<string, unknown>)[key] =
+                                value;
+                        }
+                        break;
+
+                    default:
+                        // Unknown fields are ignored for security
+                        break;
                 }
             }
-            Object.assign(whereConditions, typeCorrected);
         }
 
         const listings = await this.listingRepository.find({
@@ -61,17 +95,10 @@ export class DatabaseService {
             take: 100, // Pagination limit
         });
 
-        // If listingType filter was specified, filter in application layer
-        if (filters?.listingType && typeof filters.listingType === 'string') {
-            const filterType = filters.listingType as
-                | 'house-sitting'
-                | 'drop-in-visit'
-                | 'day-care'
-                | 'walks'
-                | 'feeding'
-                | 'overnight';
+        // Apply post-processing filters if needed
+        if (needsApplicationFiltering && listingTypeFilter) {
             return listings.filter((listing) =>
-                listing.listingType.includes(filterType),
+                listing.listingType.includes(listingTypeFilter as ListingType),
             );
         }
 

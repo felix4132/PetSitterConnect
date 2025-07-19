@@ -8,8 +8,6 @@ import {
     ParseIntPipe,
     Post,
     Query,
-    UsePipes,
-    ValidationPipe,
 } from '@nestjs/common';
 import type { Listing } from '../../domain/listings/listing.entity.js';
 import { CreateListingDto } from './dto/create-listing.dto.js';
@@ -24,13 +22,11 @@ export class ListingsController {
     ) {}
 
     @Post()
-    @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
     async create(@Body() dto: CreateListingDto): Promise<Listing> {
         return this.listingsService.create(dto);
     }
 
     @Get()
-    @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
     async find(@Query() query: FindListingsQueryDto): Promise<Listing[]> {
         return this.listingsService.findAll(query);
     }
