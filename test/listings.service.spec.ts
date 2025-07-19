@@ -164,8 +164,8 @@ describe('ListingsService', () => {
                 description: 'test desc',
                 species: 'dog',
                 listingType: ['walks'],
-                startDate: '2025-07-15',
-                endDate: '2025-07-25',
+                startDate: '2025-08-15',
+                endDate: '2025-08-25',
                 sitterVerified: false,
                 price: 25,
             };
