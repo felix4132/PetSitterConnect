@@ -4,6 +4,86 @@ import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended'
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
+// Inline plugin: no-direct-date-in-tests (ehemals in ./no-direct-date-in-tests.js)
+const localTestsPlugin = {
+    rules: {
+        'no-direct-date-in-tests': {
+            meta: {
+                type: 'problem',
+                docs: {
+                    description:
+                        'Disallow direct Date.now() and new Date() usages in tests; use test helpers like isoDatePlus/isoDate instead',
+                    recommended: false,
+                },
+                schema: [],
+                messages: {
+                    avoidDateNow:
+                        'Avoid Date.now() in tests. Use isoDatePlus()/isoDate from test-helpers instead, or rename to startTime/endTime for performance timing.',
+                    avoidNewDate:
+                        'Avoid new Date() in tests. Use isoDatePlus()/isoDate from test-helpers instead.',
+                },
+            },
+            create(context) {
+                function isPerfTimerDeclarator(node: any) {
+                    // Allow: const startTime = Date.now(); const endTime = Date.now();
+                    // Also allow: beforeTime/afterTime used to bound timestamps in tests
+                    if (node && node.type === 'VariableDeclarator') {
+                        const id = node.id;
+                        if (id && id.type === 'Identifier') {
+                            return /^(start|end|before|after)Time$/i.test(
+                                id.name,
+                            );
+                        }
+                    }
+                    return false;
+                }
+
+                return {
+                    CallExpression(node: any) {
+                        // Match Date.now()
+                        if (
+                            node.callee &&
+                            node.callee.type === 'MemberExpression' &&
+                            !node.callee.computed &&
+                            node.callee.object.type === 'Identifier' &&
+                            node.callee.object.name === 'Date' &&
+                            node.callee.property.type === 'Identifier' &&
+                            node.callee.property.name === 'now'
+                        ) {
+                            // Exception for startTime/endTime timers
+                            const parent = node.parent;
+                            if (isPerfTimerDeclarator(parent)) return;
+                            if (
+                                parent &&
+                                parent.type === 'VariableDeclarator' &&
+                                isPerfTimerDeclarator(parent)
+                            )
+                                return;
+                            context.report({ node, messageId: 'avoidDateNow' });
+                        }
+                    },
+                    NewExpression(node: any) {
+                        // Match new Date() with zero args; allow new Date(value) for parsing
+                        if (
+                            node.callee &&
+                            node.callee.type === 'Identifier' &&
+                            node.callee.name === 'Date' &&
+                            (!node.arguments || node.arguments.length === 0)
+                        ) {
+                            const parent = node.parent;
+                            if (isPerfTimerDeclarator(parent)) return;
+                            // Allow parsing: new Date(<arg>)
+                            if (node.arguments && node.arguments.length > 0)
+                                return;
+                            context.report({ node, messageId: 'avoidNewDate' });
+                        }
+                    },
+                };
+            },
+        },
+    },
+} as const;
+
 export default tseslint.config(
     {
         ignores: ['dist/**', 'node_modules/**', 'coverage/**'],
@@ -55,6 +135,9 @@ export default tseslint.config(
     },
     {
         files: ['test/**/*.ts'],
+        plugins: {
+            'local-tests': localTestsPlugin,
+        },
         rules: {
             '@typescript-eslint/no-explicit-any': 'off',
             '@typescript-eslint/no-unsafe-argument': 'off',
@@ -62,6 +145,13 @@ export default tseslint.config(
             '@typescript-eslint/no-unsafe-call': 'off',
             '@typescript-eslint/no-unsafe-member-access': 'off',
             'no-console': 'off',
+            'local-tests/no-direct-date-in-tests': 'error',
+        },
+    },
+    {
+        files: ['test/test-helpers.ts'],
+        rules: {
+            'local-tests/no-direct-date-in-tests': 'off',
         },
     },
 );

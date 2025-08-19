@@ -11,12 +11,12 @@ import {
     IsString,
     Min,
 } from 'class-validator';
-import type { Species, ListingType } from '../../../shared/types/index.js';
+import type { ListingType, Species } from '../../../shared/types/types.js';
 import {
-    SPECIES_VALUES,
     LISTING_TYPE_VALUES,
+    SPECIES_VALUES,
     VALIDATION_MESSAGES,
-} from '../../../shared/types/index.js';
+} from '../../../shared/types/types.js';
 
 export class CreateListingDto {
     @IsString()

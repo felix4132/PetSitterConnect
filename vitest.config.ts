@@ -27,11 +27,13 @@ export default defineConfig({
                 '**/*.test.ts',
                 '**/*.e2e-spec.ts',
                 'src/main.ts',
+                'src/config/app.config.ts',
                 '*.config.*',
                 'vitest.config.ts',
                 'eslint.config.mts',
                 'nest-cli.json',
                 'tsconfig*.json',
+                'src/**/*index.ts',
             ],
             thresholds: {
                 global: {

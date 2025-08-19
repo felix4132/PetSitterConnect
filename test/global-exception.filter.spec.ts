@@ -202,15 +202,15 @@ describe('GlobalExceptionFilter', () => {
 
         it('should include valid ISO timestamp', () => {
             const exception = new HttpException('Test', HttpStatus.BAD_REQUEST);
-            const beforeTime = new Date();
+            const beforeTime = new Date(); // allowed by lint rule as timer variable
 
             filter.catch(exception, mockArgumentsHost);
 
-            const afterTime = new Date();
+            const afterTime = new Date(); // allowed by lint rule as timer variable
             const capturedCall = mockResponse.json.mock.calls[0]?.[0] as {
                 timestamp: string;
             };
-            const timestampDate = new Date(capturedCall.timestamp);
+            const timestampDate = new Date(capturedCall.timestamp); // parsing allowed by lint rule
 
             // Verify it's a valid ISO string and within reasonable time range
             expect(capturedCall.timestamp).toMatch(

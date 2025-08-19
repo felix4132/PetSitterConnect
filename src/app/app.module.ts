@@ -23,7 +23,7 @@ import { AppService } from './app.service.js';
                 throttlers: [
                     {
                         ttl: parseInt(
-                            configService.get('RATE_LIMIT_TTL') ?? '60',
+                            configService.get('RATE_LIMIT_TTL') ?? '60000',
                             10,
                         ),
                         limit: parseInt(

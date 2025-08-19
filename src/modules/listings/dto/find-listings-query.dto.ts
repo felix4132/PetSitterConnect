@@ -9,12 +9,12 @@ import {
     Min,
 } from 'class-validator';
 import { BaseTransformDto } from '../../../shared/dto/base.dto.js';
-import type { Species, ListingType } from '../../../shared/types/index.js';
+import type { ListingType, Species } from '../../../shared/types/types.js';
 import {
-    SPECIES_VALUES,
     LISTING_TYPE_VALUES,
+    SPECIES_VALUES,
     VALIDATION_MESSAGES,
-} from '../../../shared/types/index.js';
+} from '../../../shared/types/types.js';
 
 export class FindListingsQueryDto extends BaseTransformDto {
     @IsOptional()

@@ -1,7 +1,7 @@
 import { validate } from 'class-validator';
 import { beforeEach, describe, expect, it } from 'vitest';
+import type { ListingType, Species } from '../../../../shared/types/types.js';
 import { CreateListingDto } from '../create-listing.dto.js';
-import type { Species, ListingType } from '../../../../shared/types/index.js';
 
 describe('CreateListingDto', () => {
     let dto: CreateListingDto;

@@ -4,6 +4,7 @@ import type { Listing } from '../src/domain/listings/listing.entity.js';
 import { DatabaseService } from '../src/infrastructure/database/database.service.js';
 import type { CreateListingDto } from '../src/modules/listings/dto/create-listing.dto.js';
 import { ListingsService } from '../src/modules/listings/listings.service.js';
+import { isoDatePlus, isoYesterday } from './test-helpers.ts';
 
 describe('ListingsService', () => {
     let service: ListingsService;
@@ -49,8 +50,8 @@ describe('ListingsService', () => {
                 description: 'test desc',
                 species: 'dog',
                 listingType: ['walks'],
-                startDate: '2025-08-15', // Future date
-                endDate: '2025-08-25', // Future date
+                startDate: isoDatePlus(1), // Future date
+                endDate: isoDatePlus(2), // Future date
                 sitterVerified: false,
                 price: 25,
             };
@@ -62,8 +63,8 @@ describe('ListingsService', () => {
                 description: 'test desc',
                 species: 'dog',
                 listingType: ['walks'],
-                startDate: '2025-08-15',
-                endDate: '2025-08-25',
+                startDate: isoDatePlus(1),
+                endDate: isoDatePlus(2),
                 sitterVerified: false,
                 price: 25,
             };
@@ -81,8 +82,8 @@ describe('ListingsService', () => {
                 description: 'test desc',
                 species: 'dog',
                 listingType: ['walks'],
-                startDate: '2025-08-15',
-                endDate: '2025-08-25',
+                startDate: isoDatePlus(1),
+                endDate: isoDatePlus(2),
                 price: 25,
                 sitterVerified: false,
                 breed: undefined,
@@ -95,16 +96,13 @@ describe('ListingsService', () => {
 
         it('should throw BadRequestException for past start date', async () => {
             // Arrange
-            const yesterday = new Date();
-            yesterday.setDate(yesterday.getDate() - 1);
             const createDto: CreateListingDto = {
                 ownerId: 'owner1',
                 title: 'Test Listing',
                 description: 'test desc',
                 species: 'dog',
                 listingType: ['walks'],
-                startDate:
-                    yesterday.toISOString().split('T')[0] ?? '2024-01-01', // Past date
+                startDate: isoYesterday(), // Past date
                 endDate: '2025-08-25',
                 sitterVerified: false,
                 price: 25,
@@ -124,8 +122,8 @@ describe('ListingsService', () => {
                 description: 'test desc',
                 species: 'dog',
                 listingType: ['walks'],
-                startDate: '2025-08-20',
-                endDate: '2025-08-15', // End date before start date
+                startDate: isoDatePlus(5),
+                endDate: isoDatePlus(4), // End date before start date
                 sitterVerified: false,
                 price: 25,
             };
@@ -144,8 +142,8 @@ describe('ListingsService', () => {
                 description: 'test desc',
                 species: 'dog',
                 listingType: ['walks'],
-                startDate: '2025-08-20',
-                endDate: '2025-08-20', // Same date
+                startDate: isoDatePlus(5),
+                endDate: isoDatePlus(5), // Same date
                 sitterVerified: false,
                 price: 25,
             };
@@ -164,8 +162,8 @@ describe('ListingsService', () => {
                 description: 'test desc',
                 species: 'dog',
                 listingType: ['walks'],
-                startDate: '2025-08-15',
-                endDate: '2025-08-25',
+                startDate: isoDatePlus(1),
+                endDate: isoDatePlus(2),
                 sitterVerified: false,
                 price: 25,
             };

@@ -3,6 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { AppModule } from '../src/app/app.module.ts';
+import { isoDatePlus } from './test-helpers.ts';
 
 const exampleListing = {
     ownerId: 'owner1',
@@ -10,8 +11,8 @@ const exampleListing = {
     description: 'test desc',
     species: 'dog' as const,
     listingType: ['house-sitting'],
-    startDate: '2025-08-01', // Future date
-    endDate: '2025-08-02', // Future date
+    startDate: isoDatePlus(1), // Future date
+    endDate: isoDatePlus(2), // Future date
     sitterVerified: false,
     price: 10,
     breed: 'Bulldog',

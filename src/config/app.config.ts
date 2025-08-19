@@ -1,55 +1,4 @@
 /**
- * Application configuration interface
- */
-export interface AppConfig {
-    port: number;
-    nodeEnv: string;
-    database: {
-        type: string;
-        database: string;
-        synchronize: boolean;
-        logging: boolean;
-    };
-    cors: {
-        origin: string[] | boolean;
-        credentials: boolean;
-    };
-    rateLimit: {
-        ttl: number;
-        limit: number;
-    };
-}
-
-/**
- * Load and validate application configuration
- */
-export function loadAppConfig(): AppConfig {
-    const nodeEnv = process.env.NODE_ENV ?? 'development';
-    const isProduction = nodeEnv === 'production';
-
-    return {
-        port: parseInt(process.env.PORT ?? '3000', 10),
-        nodeEnv,
-        database: {
-            type: process.env.DB_TYPE ?? 'sqlite',
-            database: process.env.DB_PATH ?? 'data/pets.db',
-            synchronize: !isProduction,
-            logging: nodeEnv === 'development',
-        },
-        cors: {
-            origin: isProduction
-                ? (process.env.ALLOWED_ORIGINS?.split(',') ?? [])
-                : true,
-            credentials: true,
-        },
-        rateLimit: {
-            ttl: parseInt(process.env.RATE_LIMIT_TTL ?? '60000', 10),
-            limit: parseInt(process.env.RATE_LIMIT_LIMIT ?? '100', 10),
-        },
-    };
-}
-
-/**
  * Validate required environment variables and configuration
  */
 export function validateConfig(): void {
@@ -126,7 +75,7 @@ export function validateConfig(): void {
     if (nodeEnv === 'production') {
         if (!process.env.DB_PATH) {
             warnings.push(
-                'DB_PATH is not set in production, using default path',
+                'DB_PATH is not set. The app is using an in-memory SQLite database (data is not persisted). This is NOT recommended for production. Set DB_PATH (e.g. ./data/petsitter.sqlite) and update the database configuration to use it.',
             );
         }
 

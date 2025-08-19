@@ -11,9 +11,9 @@ TypeScript and comprehensive test coverage.
 - **Validation** with class-validator/class-transformer and reusable base DTOs
 - **Configuration Management** with type-safe environment validation
 - **Rate Limiting** and CORS protection
-- **Security** with Helmet (XSS, CSRF, etc.)
+- **Security** with Helmet (security headers)
 - **Global Exception Handling** for better error handling
-- **>95% Test Coverage** (100% for Business Logic)
+- **High test coverage** (see coverage report)
 
 ## 🛠️ Tech Stack
 
@@ -32,11 +32,19 @@ TypeScript and comprehensive test coverage.
 npm install
 
 # Environment Setup (optional)
+# macOS/Linux
 cp .env.example .env
+# Windows PowerShell
+Copy-Item .env.example .env
+# Windows CMD
+copy .env.example .env
 
-# Build & Run
-npm run build
+# Run (Development)
 npm run start:dev
+
+# Build & Run (Production)
+npm run build
+npm run start:prod
 
 # Testing
 npm test
@@ -49,6 +57,8 @@ npm run typecheck
 ```
 
 Server runs on: `http://localhost:3000/api/v1`
+
+Note: The base path is configurable via `API_PREFIX`.
 
 ## 📚 API Endpoints
 
@@ -73,7 +83,7 @@ GET    /listings/:listingId/applications    # Get applications for listing
 
 ## 🧪 Testing
 
-- **269 Tests** (Unit + E2E + Integration + DTO Validation + Complex Scenarios)
+- **Comprehensive test suite** (Unit, E2E, Integration, DTO validation, complex scenarios)
 - **Comprehensive E2E Tests** for CORS, Rate Limiting, APIs
 - **Complex Integration Tests** for multi-step workflows
 - **DTO Validation Tests** for all input parameters
@@ -88,19 +98,20 @@ npm run test:e2e      # E2E tests only
 npm run test:watch    # Watch mode for development
 ```
 
+After `npm run test:cov`, open `coverage/index.html` for the coverage report.
+
 ## 🏗️ Project Structure
 
 ```text
 src/
 ├── main.ts           # Application entry point
 ├── app/              # Main application module and configuration
-├── shared/           # Shared utilities, types, and base classes
+├── shared/           # Framework-agnostic utilities, types, and base DTO classes
 │   ├── types/        # Centralized type definitions (Species, ListingType, etc.)
 │   └── dto/          # Reusable base DTO classes
 ├── config/           # Configuration management and validation
-├── common/           # Shared utilities and components
-│   ├── filters/      # Global exception filters
-│   └── validators/   # Custom validation classes
+├── common/           # Cross-cutting NestJS components
+│   ├── filters/      # Global exception filters (Nest-specific)
 ├── domain/           # Database entities and models
 │   ├── applications/ # Application entity
 │   └── listings/     # Listing entity
@@ -109,16 +120,25 @@ src/
 ├── modules/          # Business logic modules
 │   ├── listings/     # Listing management
 │   │   ├── dto/      # DTOs with co-located tests
-│   │   │   └── __tests__/  # DTO validation tests
 │   │   └── index.ts  # Barrel exports for clean imports
 │   └── applications/ # Application workflow
 │       ├── dto/      # DTOs with co-located tests
-│       │   └── __tests__/  # DTO validation tests
 │       └── index.ts  # Barrel exports for clean imports
 └── seeder/           # Database seeding service
 ```
 
+Note on folders:
+
+- Use `common` for Nest-specific cross-cutting concerns (filters, pipes,
+  guards, interceptors).
+- Use `shared` for framework-agnostic DTO bases and types.
+
 ## ⚙️ Configuration
+
+### ✅ Prerequisites
+
+- Node.js >= 22.16
+- npm >= 11.4
 
 ### 🔧 Environment Variables
 
@@ -131,11 +151,28 @@ NODE_ENV=development
 API_PREFIX=api/v1
 
 # Security & Rate Limiting
-RATE_LIMIT_TTL=60
+# RATE_LIMIT_TTL is in milliseconds (>= 1000). Example: 60000 = 60s
+RATE_LIMIT_TTL=60000
 RATE_LIMIT_LIMIT=100
+
+# Allowed Origins - Comma-separated list
+# Example: `https://a.com, https://b.com`.
 ALLOWED_ORIGINS=http://localhost:3000
 
 # Logging
 LOG_LEVEL=debug
-API_VERSION=2025.06.1
+API_VERSION=1.0.0
 ```
+
+### 🗄️ Database
+
+- Default configuration uses SQLite in-memory (`:memory:`) for convenience.
+ Data is not persisted across restarts.
+- To enable persistence, configure a file-based SQLite database (e.g., set a
+ `DB_PATH`) and update
+ `src/infrastructure/database/database.module.ts` accordingly.
+
+### 🧬 Seeder
+
+- The seeding service populates initial demo data on application startup.
+ With in-memory SQLite, data is reseeded on every restart.

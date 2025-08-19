@@ -16,6 +16,16 @@ export class SeederService implements OnApplicationBootstrap {
         private readonly applicationRepository: Repository<Application>,
     ) {}
 
+    // Helper to create ISO date (YYYY-MM-DD) relative to today
+    private isoDatePlus(offsetDays = 0): string {
+        const d = new Date();
+        d.setDate(d.getDate() + offsetDays);
+        const yyyy = String(d.getFullYear());
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        return `${yyyy}-${mm}-${dd}`;
+    }
+
     async onApplicationBootstrap() {
         try {
             await this.seedListings();
@@ -42,8 +52,9 @@ export class SeederService implements OnApplicationBootstrap {
                         'Suche einen erfahrenen Hundesitter für meinen 3-jährigen Golden Retriever Max während meines Urlaubs. Er ist sehr freundlich und gut erzogen.',
                     species: 'dog',
                     listingType: ['house-sitting', 'walks'],
-                    startDate: '2025-07-15',
-                    endDate: '2025-07-25',
+                    // Start/End dynamisch in der Zukunft
+                    startDate: this.isoDatePlus(7),
+                    endDate: this.isoDatePlus(17),
                     sitterVerified: true,
                     price: 35.0,
                     breed: 'Golden Retriever',
@@ -59,8 +70,8 @@ export class SeederService implements OnApplicationBootstrap {
                         'Meine Maine Coon Katze Luna braucht liebevolle Betreuung. Sie ist sehr anhänglich und braucht viel Aufmerksamkeit.',
                     species: 'cat',
                     listingType: ['drop-in-visit', 'feeding'],
-                    startDate: '2025-07-20',
-                    endDate: '2025-07-30',
+                    startDate: this.isoDatePlus(10),
+                    endDate: this.isoDatePlus(20),
                     sitterVerified: false,
                     price: 25.0,
                     breed: 'Maine Coon',
@@ -76,8 +87,8 @@ export class SeederService implements OnApplicationBootstrap {
                         'Suche jemanden, der sich um meine beiden Wellensittiche Pippo und Pippi kümmert. Sie sind sehr gesellig und brauchen tägliche Aufmerksamkeit.',
                     species: 'bird',
                     listingType: ['drop-in-visit', 'feeding'],
-                    startDate: '2025-08-01',
-                    endDate: '2025-08-10',
+                    startDate: this.isoDatePlus(15),
+                    endDate: this.isoDatePlus(24),
                     sitterVerified: true,
                     price: 15.0,
                     breed: 'Wellensittich',

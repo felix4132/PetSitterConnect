@@ -4,6 +4,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { AppModule } from '../src/app/app.module.ts';
+import { isoDatePlus } from './test-helpers.ts';
 
 const listing = {
     ownerId: 'owner2',
@@ -11,8 +12,8 @@ const listing = {
     description: 'desc',
     species: 'cat' as const,
     listingType: ['day-care'],
-    startDate: '2025-08-01',
-    endDate: '2025-08-02',
+    startDate: isoDatePlus(1),
+    endDate: isoDatePlus(2),
     sitterVerified: false,
     price: 15,
     breed: 'Siamese',

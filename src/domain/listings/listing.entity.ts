@@ -1,6 +1,6 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import type { ListingType, Species } from '../../shared/types/types.js';
 import { Application } from '../applications/application.entity.js';
-import type { Species, ListingType } from '../../shared/types/index.js';
 
 @Entity('listings')
 export class Listing {

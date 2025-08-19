@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, type FindOptionsWhere } from 'typeorm';
 import { Application } from '../../domain/applications/application.entity.js';
 import { Listing } from '../../domain/listings/listing.entity.js';
-import type { ListingType } from '../../shared/types/index.js';
+import type { ListingType } from '../../shared/types/types.js';
 
 @Injectable()
 export class DatabaseService {
