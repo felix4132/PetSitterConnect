@@ -5,9 +5,9 @@ import {
     ManyToOne,
     PrimaryGeneratedColumn,
 } from 'typeorm';
+import type { ApplicationStatus } from '../../shared/types/types.js';
+import { APPLICATION_STATUS_VALUES } from '../../shared/types/types.js';
 import { Listing } from '../listings/listing.entity.js';
-import type { ApplicationStatus } from '../../shared/types/index.js';
-import { APPLICATION_STATUS_VALUES } from '../../shared/types/index.js';
 
 @Entity('applications')
 export class Application {

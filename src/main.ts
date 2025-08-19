@@ -1,40 +1,40 @@
-import { Logger, ValidationPipe } from '@nestjs/common';
+import { Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import helmet from 'helmet';
 import 'reflect-metadata';
 import { AppModule } from './app/app.module.js';
-import { validateConfig } from './config/index.js';
+import { validateConfig } from './config/app.config.js';
 
 async function bootstrap() {
-    // Validate configuration before starting the application
-    validateConfig();
-
     const app = await NestFactory.create(AppModule);
+    // Validate configuration after ConfigModule loaded environment variables
+    validateConfig();
+    const configService = app.get(ConfigService);
     const logger = new Logger('Bootstrap');
 
     // Environment variables
-    const port = parseInt(process.env.PORT ?? '3000', 10);
-    const nodeEnv = process.env.NODE_ENV ?? 'development';
-    const apiPrefix = process.env.API_PREFIX ?? 'api/v1';
-    const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') ?? [];
+    const port = parseInt(configService.get<string>('PORT') ?? '3000', 10);
+    const nodeEnv = configService.get<string>('NODE_ENV') ?? 'development';
+    const apiPrefix = configService.get<string>('API_PREFIX') ?? 'api/v1';
+    const allowedOriginsRaw =
+        configService.get<string>('ALLOWED_ORIGINS') ?? '';
+    const allowedOrigins: string[] = allowedOriginsRaw
+        .split(',')
+        .map((o) => o.trim())
+        .filter((o) => o.length > 0);
 
     // Set log level based on environment
-    if (process.env.LOG_LEVEL) {
+    const logLevel = configService.get<string>('LOG_LEVEL');
+    if (logLevel) {
         Logger.overrideLogger(
-            process.env.LOG_LEVEL === 'debug'
+            logLevel === 'debug'
                 ? ['log', 'debug', 'error', 'verbose', 'warn']
                 : ['log', 'error', 'warn'],
         );
     }
 
-    // Global validation pipe
-    app.useGlobalPipes(
-        new ValidationPipe({
-            whitelist: true,
-            forbidNonWhitelisted: true,
-            transform: true,
-        }),
-    );
+    // ValidationPipe is configured globally via APP_PIPE in AppModule
 
     // Security headers
     app.use(helmet());
@@ -58,15 +58,29 @@ async function bootstrap() {
     await app.listen(port);
 
     logger.log(
-        `Application is running on: http://localhost:${port.toString()}/${apiPrefix}`,
+        `Application is running on: http://localhost:${port.toString()}/${String(apiPrefix)}`,
     );
     logger.log(`Environment: ${nodeEnv}`);
-    logger.log(`API Version: ${process.env.API_VERSION ?? 'not set'}`);
+    const apiVersion = configService.get<string>('API_VERSION') ?? 'not set';
+    logger.log(`API Version: ${String(apiVersion)}`);
+    const rateLimitLimit =
+        configService.get<string>('RATE_LIMIT_LIMIT') ?? '100';
+    const rateLimitTtlMs = parseInt(
+        configService.get<string>('RATE_LIMIT_TTL') ?? '60000',
+        10,
+    );
+    const rateLimitTtlSeconds =
+        (isNaN(rateLimitTtlMs) ? 60000 : rateLimitTtlMs) / 1000;
+    const secondsDisplay = Number.isInteger(rateLimitTtlSeconds)
+        ? rateLimitTtlSeconds.toString()
+        : rateLimitTtlSeconds.toFixed(3);
     logger.log(
-        `Rate Limiting: ${process.env.RATE_LIMIT_LIMIT ?? '100'} requests per ${process.env.RATE_LIMIT_TTL ?? '60'} seconds`,
+        `Rate Limiting: ${rateLimitLimit} requests per ${rateLimitTtlMs.toString()} ms (${secondsDisplay} s)`,
     );
     if (nodeEnv === 'production') {
-        logger.log(`Allowed Origins: ${allowedOrigins.join(', ')}`);
+        logger.log(
+            `Allowed Origins: ${allowedOrigins.length > 0 ? allowedOrigins.join(', ') : '(none - CORS disabled)'}`,
+        );
     } else {
         logger.log('CORS: All origins allowed (development mode)');
     }

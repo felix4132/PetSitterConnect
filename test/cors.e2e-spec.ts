@@ -138,6 +138,45 @@ describe('CORS Configuration (e2e)', () => {
             );
         });
 
+        it('should trim whitespace around allowed origins', async () => {
+            await app.close();
+            // Set with spaces
+            process.env.ALLOWED_ORIGINS = ' https://a.com , https://b.com ';
+
+            const moduleFixture2: TestingModule =
+                await Test.createTestingModule({
+                    imports: [AppModule],
+                }).compile();
+
+            const app2 = moduleFixture2.createNestApplication();
+            const origins = process.env.ALLOWED_ORIGINS
+                ? process.env.ALLOWED_ORIGINS.split(',').map((o) => o.trim())
+                : [];
+            app2.enableCors({
+                origin: process.env.NODE_ENV === 'production' ? origins : true,
+                credentials: true,
+            });
+            await app2.init();
+
+            const res1 = await request(app2.getHttpServer())
+                .get('/')
+                .set('Origin', 'https://a.com')
+                .expect(200);
+            expect(res1.headers['access-control-allow-origin']).toBe(
+                'https://a.com',
+            );
+
+            const res2 = await request(app2.getHttpServer())
+                .get('/')
+                .set('Origin', 'https://b.com')
+                .expect(200);
+            expect(res2.headers['access-control-allow-origin']).toBe(
+                'https://b.com',
+            );
+
+            await app2.close();
+        });
+
         it('should reject requests from non-allowed origins', async () => {
             const response = await request(app.getHttpServer())
                 .get('/')

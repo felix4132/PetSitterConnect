@@ -1,10 +1,10 @@
 import { IsIn, IsNotEmpty, IsString } from 'class-validator';
 import { IdParamsDto } from '../../../shared/dto/base.dto.js';
-import type { ApplicationStatus } from '../../../shared/types/index.js';
+import type { ApplicationStatus } from '../../../shared/types/types.js';
 import {
     APPLICATION_STATUS_VALUES,
     VALIDATION_MESSAGES,
-} from '../../../shared/types/index.js';
+} from '../../../shared/types/types.js';
 
 export class CreateApplicationDto {
     @IsString()

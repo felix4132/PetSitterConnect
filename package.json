@@ -1,6 +1,6 @@
 {
   "name": "petsitterconnect",
-  "version": "2025.06.1",
+  "version": "2025.08.1",
   "description": "backend server for PetSitterConnect platform",
   "license": "MIT",
   "private": true,

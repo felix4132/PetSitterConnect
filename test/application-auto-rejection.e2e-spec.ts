@@ -2,6 +2,7 @@ import type { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
 import { AppModule } from '../src/app/app.module.js';
+import { isoDatePlus } from './test-helpers.ts';
 
 describe('Application Auto-Rejection Logic (e2e)', () => {
     let app: INestApplication;
@@ -29,8 +30,8 @@ describe('Application Auto-Rejection Logic (e2e)', () => {
                 description: 'Test listing for auto-rejection logic',
                 species: 'dog',
                 listingType: ['walks'],
-                startDate: '2025-08-01',
-                endDate: '2025-08-10',
+                startDate: isoDatePlus(1),
+                endDate: isoDatePlus(2),
                 sitterVerified: false,
                 price: 30.0,
             })
@@ -109,8 +110,8 @@ describe('Application Auto-Rejection Logic (e2e)', () => {
                 description: 'First listing',
                 species: 'cat',
                 listingType: ['feeding'],
-                startDate: '2025-08-01',
-                endDate: '2025-08-10',
+                startDate: isoDatePlus(1),
+                endDate: isoDatePlus(2),
                 sitterVerified: false,
                 price: 25.0,
             })
@@ -124,8 +125,8 @@ describe('Application Auto-Rejection Logic (e2e)', () => {
                 description: 'Second listing',
                 species: 'dog',
                 listingType: ['walks'],
-                startDate: '2025-08-01',
-                endDate: '2025-08-10',
+                startDate: isoDatePlus(1),
+                endDate: isoDatePlus(2),
                 sitterVerified: false,
                 price: 35.0,
             })
@@ -175,8 +176,8 @@ describe('Application Auto-Rejection Logic (e2e)', () => {
                 description: 'Test listing',
                 species: 'bird',
                 listingType: ['feeding'],
-                startDate: '2025-08-01',
-                endDate: '2025-08-10',
+                startDate: isoDatePlus(1),
+                endDate: isoDatePlus(2),
                 sitterVerified: false,
                 price: 20.0,
             })
