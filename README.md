@@ -3,6 +3,8 @@
 Modern backend server for a pet-sitting platform with REST API,
 TypeScript and comprehensive test coverage.
 
+This project was created as part of a eBusiness course.
+
 ## 🚀 Features
 
 - **REST API** for listings and applications with optimized database access
