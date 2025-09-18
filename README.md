@@ -113,7 +113,7 @@ src/
 │   └── dto/          # Reusable base DTO classes
 ├── config/           # Configuration management and validation
 ├── common/           # Cross-cutting NestJS components
-│   ├── filters/      # Global exception filters (Nest-specific)
+│   └── filters/      # Global exception filters (Nest-specific)
 ├── domain/           # Database entities and models
 │   ├── applications/ # Application entity
 │   └── listings/     # Listing entity
@@ -121,11 +121,9 @@ src/
 │   └── database/     # Database module and service
 ├── modules/          # Business logic modules
 │   ├── listings/     # Listing management
-│   │   ├── dto/      # DTOs with co-located tests
-│   │   └── index.ts  # Barrel exports for clean imports
+│   │   └── dto/      # DTOs with co-located tests
 │   └── applications/ # Application workflow
-│       ├── dto/      # DTOs with co-located tests
-│       └── index.ts  # Barrel exports for clean imports
+│       └── dto/      # DTOs with co-located tests
 └── seeder/           # Database seeding service
 ```
 
