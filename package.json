@@ -1,7 +1,7 @@
 {
   "name": "petsitterconnect",
   "version": "2025.08.1",
-  "description": "backend server for PetSitterConnect platform",
+  "description": "modern backend server for a pet-sitting platform with REST API, TypeScript and comprehensive test coverage",
   "license": "MIT",
   "private": true,
   "type": "module",
