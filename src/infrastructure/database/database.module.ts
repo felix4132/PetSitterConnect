@@ -8,7 +8,7 @@ import { DatabaseService } from './database.service.js';
 @Module({
     imports: [
         TypeOrmModule.forRoot({
-            type: 'sqlite',
+            type: 'better-sqlite3',
             database: ':memory:', // For testing, use in-memory database
             entities: [Listing, Application],
             synchronize: true,

@@ -58,11 +58,11 @@ async function bootstrap() {
     await app.listen(port);
 
     logger.log(
-        `Application is running on: http://localhost:${port.toString()}/${String(apiPrefix)}`,
+        `Application is running on: http://localhost:${port.toString()}/${apiPrefix}`,
     );
     logger.log(`Environment: ${nodeEnv}`);
     const apiVersion = configService.get<string>('API_VERSION') ?? 'not set';
-    logger.log(`API Version: ${String(apiVersion)}`);
+    logger.log(`API Version: ${apiVersion}`);
     const rateLimitLimit =
         configService.get<string>('RATE_LIMIT_LIMIT') ?? '100';
     const rateLimitTtlMs = parseInt(

@@ -8,8 +8,8 @@ This project was created as part of a eBusiness course.
 ## 🚀 Features
 
 - **REST API** for listings and applications with optimized database access
-- **TypeScript 5.8** with strict typing and centralized shared types
-- **TypeORM** with SQLite database and SQL-level filtering
+- **TypeScript 5.9** with strict typing and centralized shared types
+- **TypeORM** with better-sqlite3 database and SQL-level filtering
 - **Validation** with class-validator/class-transformer and reusable base DTOs
 - **Configuration Management** with type-safe environment validation
 - **Rate Limiting** and CORS protection
@@ -20,8 +20,8 @@ This project was created as part of a eBusiness course.
 ## 🛠️ Tech Stack
 
 - **Framework**: NestJS 11 + Express
-- **Language**: TypeScript 5.8 (ESM Module)
-- **Database**: TypeORM + SQLite
+- **Language**: TypeScript 5.9 (ESM Module)
+- **Database**: TypeORM + better-sqlite3
 - **Testing**: Vitest + Supertest
 - **Validation**: class-validator + class-transformer
 - **Security**: Helmet, Rate Limiting, CORS
@@ -137,8 +137,8 @@ Note on folders:
 
 ### ✅ Prerequisites
 
-- Node.js >= 22.16
-- npm >= 11.4
+- Node.js >= 22.16.0
+- npm >= 11.6.2
 
 ### 🔧 Environment Variables
 
@@ -166,13 +166,15 @@ API_VERSION=1.0.0
 
 ### 🗄️ Database
 
-- Default configuration uses SQLite in-memory (`:memory:`) for convenience.
+- Default configuration uses **better-sqlite3** in-memory (`:memory:`) for convenience.
  Data is not persisted across restarts.
-- To enable persistence, configure a file-based SQLite database (e.g., set a
- `DB_PATH`) and update
- `src/infrastructure/database/database.module.ts` accordingly.
+- To enable persistence, configure a file-based database (e.g., set a
+ `DB_PATH`) and update `src/infrastructure/database/database.module.ts` accordingly.
+- For production use with persistent storage, WAL mode is automatically recommended
+ by better-sqlite3 for optimal performance.
 
 ### 🧬 Seeder
 
 - The seeding service populates initial demo data on application startup.
- With in-memory SQLite, data is reseeded on every restart.
+- With in-memory database mode, data is reseeded on every restart.
+- Creates 3 sample listings and 4 sample applications for testing and development.

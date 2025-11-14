@@ -1,5 +1,6 @@
 // @ts-check
 import eslint from '@eslint/js';
+import type { Rule } from 'eslint';
 import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
@@ -23,7 +24,7 @@ const localTestsPlugin = {
                         'Avoid new Date() in tests. Use isoDatePlus()/isoDate from test-helpers instead.',
                 },
             },
-            create(context) {
+            create(context: Rule.RuleContext) {
                 function isPerfTimerDeclarator(node: any) {
                     // Allow: const startTime = Date.now(); const endTime = Date.now();
                     // Also allow: beforeTime/afterTime used to bound timestamps in tests
@@ -89,7 +90,7 @@ export default tseslint.config(
         ignores: ['dist/**', 'node_modules/**', 'coverage/**'],
     },
     {
-        files: ['src/**/*.ts', 'test/**/*.ts'],
+        files: ['src/**/*.ts', 'test/**/*.ts', 'scripts/**/*.ts'],
 
         extends: [
             eslint.configs.recommended,

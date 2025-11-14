@@ -354,7 +354,7 @@ describe('Integrated Scenarios (e2e)', () => {
 
             // Überprüfe Owner's Listings
             const ownerListingsResponse = await request(app.getHttpServer())
-                .get(`/listings/owner/${String(ownerId)}`)
+                .get(`/listings/owner/${ownerId}`)
                 .expect(200);
 
             expect(ownerListingsResponse.body).toHaveLength(3);

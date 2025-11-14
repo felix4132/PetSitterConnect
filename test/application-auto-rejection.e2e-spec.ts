@@ -86,13 +86,13 @@ describe('Application Auto-Rejection Logic (e2e)', () => {
 
         // Finde die spezifischen Applications in der Antwort
         const app1After = afterApplications.body.find(
-            (app: { id: string }) => String(app.id) === app1Id,
+            (app: { id: string | number }) => String(app.id) === app1Id,
         );
         const app2After = afterApplications.body.find(
-            (app: { id: string }) => String(app.id) === app2Id,
+            (app: { id: string | number }) => String(app.id) === app2Id,
         );
         const app3After = afterApplications.body.find(
-            (app: { id: string }) => String(app.id) === app3Id,
+            (app: { id: string | number }) => String(app.id) === app3Id,
         );
 
         expect(app1After.status).toBe('rejected');
@@ -161,7 +161,7 @@ describe('Application Auto-Rejection Logic (e2e)', () => {
             .expect(200);
 
         const app2After = listing2Applications.body.find(
-            (app: { id: string }) => String(app.id) === app2Id,
+            (app: { id: string | number }) => String(app.id) === app2Id,
         );
         expect(app2After.status).toBe('pending'); // Sollte weiterhin pending sein
     });
@@ -219,10 +219,10 @@ describe('Application Auto-Rejection Logic (e2e)', () => {
         expect(finalApplications.body).toHaveLength(2);
 
         const app1Final = finalApplications.body.find(
-            (app: { id: string }) => String(app.id) === app1Id,
+            (app: { id: string | number }) => String(app.id) === app1Id,
         );
         const app2Final = finalApplications.body.find(
-            (app: { id: string }) => String(app.id) === app2Id,
+            (app: { id: string | number }) => String(app.id) === app2Id,
         );
 
         expect(app1Final.status).toBe('rejected');
