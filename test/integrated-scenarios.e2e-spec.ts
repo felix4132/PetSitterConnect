@@ -185,7 +185,7 @@ describe('Integrated Scenarios (e2e)', () => {
             const listingId = createResponse.body.id;
 
             // Simuliere gleichzeitige Bewerbungen von vielen Sittern
-            // Use sequential requests in CI to avoid connection resets
+            const concurrentApplications = [];
             const sitterIds = [
                 'sitter1',
                 'sitter2',
@@ -194,14 +194,19 @@ describe('Integrated Scenarios (e2e)', () => {
                 'sitter5',
             ];
 
-            const responses = [];
             for (const sitterId of sitterIds) {
-                const response = await request(app.getHttpServer())
-                    .post(`/listings/${String(listingId)}/applications`)
-                    .send({ sitterId });
-                responses.push(response);
-                expect(response.status).toBe(201);
+                concurrentApplications.push(
+                    request(app.getHttpServer())
+                        .post(`/listings/${String(listingId)}/applications`)
+                        .send({ sitterId }),
+                );
             }
+
+            // Warte auf alle Bewerbungen
+            const responses = await Promise.all(concurrentApplications);
+            responses.forEach((response) => {
+                expect(response.status).toBe(201);
+            });
 
             // Überprüfe, dass alle Bewerbungen erstellt wurden
             const allAppsResponse = await request(app.getHttpServer())

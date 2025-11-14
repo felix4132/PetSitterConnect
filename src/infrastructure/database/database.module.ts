@@ -13,6 +13,15 @@ import { DatabaseService } from './database.service.js';
             entities: [Listing, Application],
             synchronize: true,
             logging: false,
+            // Better-sqlite3 specific optimizations
+            prepareDatabase: (db: { pragma: (sql: string) => void }) => {
+                // Enable WAL mode for better concurrency
+                db.pragma('journal_mode = WAL');
+                // Optimize for in-memory performance
+                db.pragma('synchronous = NORMAL');
+                db.pragma('cache_size = 10000');
+                db.pragma('temp_store = MEMORY');
+            },
         }),
         TypeOrmModule.forFeature([Listing, Application]),
     ],
