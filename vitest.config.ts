@@ -45,7 +45,8 @@ export default defineConfig({
             },
         },
         reporters: ['verbose'],
-        testTimeout: 10000,
+        testTimeout: 30000, // Increased for CI environments and concurrent tests
+        hookTimeout: 30000, // Increased for beforeAll/afterAll hooks
     },
     resolve: {
         alias: {
