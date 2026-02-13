@@ -210,25 +210,16 @@ describe('Complex Integration Scenarios (e2e)', () => {
 
             expect(allAppsResponse.body).toHaveLength(5);
 
-            // Owner entscheidet sich schnell: erste Bewerbung akzeptieren, Rest ablehnen
+            // Owner entscheidet sich schnell: erste Bewerbung akzeptieren
             const firstApplicationId = allAppsResponse.body[0]?.id as number;
 
-            // Akzeptiere erste Bewerbung
+            // Akzeptiere erste Bewerbung — Auto-Rejection sollte die restlichen ablehnen
             await request(app.getHttpServer())
                 .patch(`/applications/${firstApplicationId.toString()}`)
                 .send({ status: 'accepted' })
                 .expect(200);
 
-            // Lehne alle anderen ab
-            for (let i = 1; i < allAppsResponse.body.length; i++) {
-                const appId = allAppsResponse.body[i]?.id as number;
-                await request(app.getHttpServer())
-                    .patch(`/applications/${appId.toString()}`)
-                    .send({ status: 'rejected' })
-                    .expect(200);
-            }
-
-            // Überprüfe finale Verteilung
+            // Überprüfe finale Verteilung — Auto-Rejection hat alle pending automatisch abgelehnt
             const finalAppsResponse = await request(app.getHttpServer())
                 .get(`/listings/${listingId.toString()}/applications`)
                 .expect(200);

@@ -3,6 +3,7 @@
 default: true
 
 MD013:
+  line_length: 90 # Set maximum line length for text lines
   code_block_line_length: 150 # Set maximum line length for code blocks
 MD028: false # Allow blank lines inside blockquotes
 MD033: false # Allow inline HTML

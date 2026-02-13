@@ -4,6 +4,7 @@ import type { Application } from '../src/domain/applications/application.entity.
 import type { Listing } from '../src/domain/listings/listing.entity.js';
 import { DatabaseService } from '../src/infrastructure/database/database.service.js';
 import { ApplicationsService } from '../src/modules/applications/applications.service.js';
+import { isoDatePlus, isoYesterday } from './test-helpers.ts';
 
 describe('ApplicationsService', () => {
     let service: ApplicationsService;
@@ -147,7 +148,7 @@ describe('ApplicationsService', () => {
     });
 
     describe('updateStatus', () => {
-        it('should update application status', async () => {
+        it('should update application status and auto-reject others', async () => {
             // Arrange
             const applicationId = 1;
             const newStatus = 'accepted';
@@ -156,6 +157,18 @@ describe('ApplicationsService', () => {
                 listingId: 1,
                 sitterId: 'sitter1',
                 status: 'accepted',
+            };
+            const futureListing: Listing = {
+                id: 1,
+                ownerId: 'owner1',
+                title: 'Test Listing',
+                description: 'test desc',
+                species: 'dog',
+                listingType: ['house-sitting'],
+                startDate: isoDatePlus(5),
+                endDate: isoDatePlus(10),
+                sitterVerified: false,
+                price: 10,
             };
 
             // Mock other applications for the same listing (for auto-rejection logic)
@@ -177,6 +190,7 @@ describe('ApplicationsService', () => {
             mockDatabaseService.updateApplicationStatus.mockResolvedValue(
                 updatedApplication,
             );
+            mockDatabaseService.getListing.mockResolvedValue(futureListing);
             mockDatabaseService.getApplicationsByListing.mockResolvedValue(
                 otherApplications,
             );
@@ -188,6 +202,7 @@ describe('ApplicationsService', () => {
             expect(
                 mockDatabaseService.updateApplicationStatus,
             ).toHaveBeenCalledWith(1, 'accepted');
+            expect(mockDatabaseService.getListing).toHaveBeenCalledWith(1);
             expect(
                 mockDatabaseService.getApplicationsByListing,
             ).toHaveBeenCalledWith(1);
@@ -212,6 +227,77 @@ describe('ApplicationsService', () => {
             expect(
                 mockDatabaseService.updateApplicationStatus,
             ).toHaveBeenCalledWith(999, 'accepted');
+        });
+
+        it('should revert to pending and throw when accepting application for past listing', async () => {
+            // Arrange
+            const updatedApplication: Application = {
+                id: 1,
+                listingId: 1,
+                sitterId: 'sitter1',
+                status: 'accepted',
+            };
+            const pastListing: Listing = {
+                id: 1,
+                ownerId: 'owner1',
+                title: 'Past Listing',
+                description: 'listing with past start date',
+                species: 'dog',
+                listingType: ['walks'],
+                startDate: isoYesterday(),
+                endDate: isoDatePlus(5),
+                sitterVerified: false,
+                price: 20,
+            };
+
+            mockDatabaseService.updateApplicationStatus.mockResolvedValue(
+                updatedApplication,
+            );
+            mockDatabaseService.getListing.mockResolvedValue(pastListing);
+
+            // Act & Assert
+            await expect(service.updateStatus(1, 'accepted')).rejects.toThrow(
+                'Cannot accept applications for listings that have already started',
+            );
+
+            // Should revert status back to 'pending'
+            expect(
+                mockDatabaseService.updateApplicationStatus,
+            ).toHaveBeenCalledWith(1, 'accepted');
+            expect(
+                mockDatabaseService.updateApplicationStatus,
+            ).toHaveBeenCalledWith(1, 'pending');
+        });
+
+        it('should not trigger auto-rejection when rejecting an application', async () => {
+            // Arrange
+            const rejectedApplication: Application = {
+                id: 1,
+                listingId: 1,
+                sitterId: 'sitter1',
+                status: 'rejected',
+            };
+
+            mockDatabaseService.updateApplicationStatus.mockResolvedValue(
+                rejectedApplication,
+            );
+
+            // Act
+            const result = await service.updateStatus(1, 'rejected');
+
+            // Assert
+            expect(result).toEqual(rejectedApplication);
+            expect(
+                mockDatabaseService.updateApplicationStatus,
+            ).toHaveBeenCalledTimes(1);
+            expect(
+                mockDatabaseService.updateApplicationStatus,
+            ).toHaveBeenCalledWith(1, 'rejected');
+            // getListing und getApplicationsByListing should NOT be called for rejection
+            expect(mockDatabaseService.getListing).not.toHaveBeenCalled();
+            expect(
+                mockDatabaseService.getApplicationsByListing,
+            ).not.toHaveBeenCalled();
         });
     });
 
@@ -280,6 +366,59 @@ describe('ApplicationsService', () => {
                 mockDatabaseService.getApplicationsByListing,
             ).toHaveBeenCalledWith(1);
             expect(result).toEqual(mockApplications);
+        });
+    });
+
+    describe('apply - sitterId sanitization', () => {
+        it('should trim whitespace from sitterId', async () => {
+            // Arrange
+            const applyDto = { sitterId: '  sitter1  ', listingId: 1 };
+            const mockListing: Listing = {
+                id: 1,
+                ownerId: 'owner1',
+                title: 'Test Listing',
+                description: 'test desc',
+                species: 'dog',
+                listingType: ['house-sitting'],
+                startDate: '2025-07-01',
+                endDate: '2025-07-02',
+                sitterVerified: false,
+                price: 10,
+            };
+            const expectedApplication: Application = {
+                id: 1,
+                listingId: 1,
+                sitterId: 'sitter1',
+                status: 'pending',
+            };
+
+            mockDatabaseService.getListing.mockResolvedValue(mockListing);
+            mockDatabaseService.getApplicationsByListing.mockResolvedValue([]);
+            mockDatabaseService.addApplication.mockResolvedValue(
+                expectedApplication,
+            );
+
+            // Act
+            const result = await service.apply(applyDto);
+
+            // Assert — addApplication should receive the trimmed sitterId
+            expect(mockDatabaseService.addApplication).toHaveBeenCalledWith({
+                listingId: 1,
+                sitterId: 'sitter1',
+            });
+            expect(result).toEqual(expectedApplication);
+        });
+
+        it('should throw BadRequestException when sitterId is only whitespace', async () => {
+            // Arrange
+            const applyDto = { sitterId: '   ', listingId: 1 };
+
+            // Act & Assert
+            await expect(service.apply(applyDto)).rejects.toThrow(
+                'sitterId cannot be empty',
+            );
+            expect(mockDatabaseService.getListing).not.toHaveBeenCalled();
+            expect(mockDatabaseService.addApplication).not.toHaveBeenCalled();
         });
     });
 

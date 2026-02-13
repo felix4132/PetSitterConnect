@@ -1,8 +1,9 @@
 import type { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
+import { DataSource } from 'typeorm';
 import { AppModule } from '../src/app/app.module.js';
-import { isoDatePlus } from './test-helpers.ts';
+import { isoDatePlus, isoYesterday } from './test-helpers.ts';
 
 describe('Application Auto-Rejection Logic (e2e)', () => {
     let app: INestApplication;
@@ -86,13 +87,13 @@ describe('Application Auto-Rejection Logic (e2e)', () => {
 
         // Finde die spezifischen Applications in der Antwort
         const app1After = afterApplications.body.find(
-            (app: { id: string }) => String(app.id) === app1Id,
+            (app: { id: number }) => String(app.id) === app1Id,
         );
         const app2After = afterApplications.body.find(
-            (app: { id: string }) => String(app.id) === app2Id,
+            (app: { id: number }) => String(app.id) === app2Id,
         );
         const app3After = afterApplications.body.find(
-            (app: { id: string }) => String(app.id) === app3Id,
+            (app: { id: number }) => String(app.id) === app3Id,
         );
 
         expect(app1After.status).toBe('rejected');
@@ -161,7 +162,7 @@ describe('Application Auto-Rejection Logic (e2e)', () => {
             .expect(200);
 
         const app2After = listing2Applications.body.find(
-            (app: { id: string }) => String(app.id) === app2Id,
+            (app: { id: number }) => String(app.id) === app2Id,
         );
         expect(app2After.status).toBe('pending'); // Sollte weiterhin pending sein
     });
@@ -219,13 +220,69 @@ describe('Application Auto-Rejection Logic (e2e)', () => {
         expect(finalApplications.body).toHaveLength(2);
 
         const app1Final = finalApplications.body.find(
-            (app: { id: string }) => String(app.id) === app1Id,
+            (app: { id: number }) => String(app.id) === app1Id,
         );
         const app2Final = finalApplications.body.find(
-            (app: { id: string }) => String(app.id) === app2Id,
+            (app: { id: number }) => String(app.id) === app2Id,
         );
 
         expect(app1Final.status).toBe('rejected');
         expect(app2Final.status).toBe('accepted');
+    });
+
+    it('should revert to pending and reject when accepting application for a past-start-date listing', async () => {
+        // 1. Erstelle ein Listing mit Datum in der Zukunft
+        const listingResponse = await request(app.getHttpServer())
+            .post('/listings')
+            .send({
+                ownerId: 'test-owner-past',
+                title: 'Past Date Revert Test',
+                description: 'Test listing for past-date revert logic',
+                species: 'dog',
+                listingType: ['walks'],
+                startDate: isoDatePlus(1),
+                endDate: isoDatePlus(5),
+                sitterVerified: false,
+                price: 30.0,
+            })
+            .expect(201);
+
+        const listingId = String(listingResponse.body.id);
+
+        // 2. Erstelle eine Application
+        const appResponse = await request(app.getHttpServer())
+            .post(`/listings/${listingId}/applications`)
+            .send({ sitterId: 'sitter-past-date' })
+            .expect(201);
+
+        const appId = String(appResponse.body.id);
+        expect(appResponse.body.status).toBe('pending');
+
+        // 3. Ändere das startDate des Listings direkt in der DB auf gestern
+        const dataSource = app.get(DataSource);
+        await dataSource.query(
+            `UPDATE listings SET startDate = ? WHERE id = ?`,
+            [isoYesterday(), listingResponse.body.id],
+        );
+
+        // 4. Versuche die Application zu akzeptieren — sollte fehlschlagen
+        const acceptRes = await request(app.getHttpServer())
+            .patch(`/applications/${appId}`)
+            .send({ status: 'accepted' })
+            .expect(400);
+
+        expect(acceptRes.body.message.message).toBe(
+            'Cannot accept applications for listings that have already started',
+        );
+
+        // 5. Überprüfe, dass der Status auf 'pending' zurückgesetzt wurde
+        const appAfter = await request(app.getHttpServer())
+            .get(`/listings/${listingId}/applications`)
+            .expect(200);
+
+        const theApp = appAfter.body.find(
+            (a: { id: number }) => String(a.id) === appId,
+        );
+        expect(theApp.status).toBe('pending');
     });
 });

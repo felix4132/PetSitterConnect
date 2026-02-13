@@ -94,6 +94,65 @@ describe('ListingsService', () => {
             });
         });
 
+        it('should trim string fields before saving', async () => {
+            // Arrange
+            const createDto: CreateListingDto = {
+                ownerId: '  owner1  ',
+                title: '  My Listing  ',
+                description: '  Some description  ',
+                species: 'dog',
+                listingType: ['walks'],
+                startDate: isoDatePlus(1),
+                endDate: isoDatePlus(2),
+                sitterVerified: false,
+                price: 25,
+                breed: '  Bulldog  ',
+                size: '  medium  ',
+                feeding: '  twice a day  ',
+                medication: '  none  ',
+            };
+
+            const mockListing: Listing = {
+                id: 1,
+                ownerId: 'owner1',
+                title: 'My Listing',
+                description: 'Some description',
+                species: 'dog',
+                listingType: ['walks'],
+                startDate: isoDatePlus(1),
+                endDate: isoDatePlus(2),
+                sitterVerified: false,
+                price: 25,
+                breed: 'Bulldog',
+                size: 'medium',
+                feeding: 'twice a day',
+                medication: 'none',
+            };
+
+            mockDatabaseService.addListing.mockResolvedValue(mockListing);
+
+            // Act
+            await service.create(createDto);
+
+            // Assert — all string fields should be trimmed
+            expect(mockDatabaseService.addListing).toHaveBeenCalledWith({
+                ownerId: 'owner1',
+                title: 'My Listing',
+                description: 'Some description',
+                species: 'dog',
+                listingType: ['walks'],
+                startDate: isoDatePlus(1),
+                endDate: isoDatePlus(2),
+                sitterVerified: false,
+                price: 25,
+                breed: 'Bulldog',
+                age: undefined,
+                size: 'medium',
+                feeding: 'twice a day',
+                medication: 'none',
+            });
+        });
+
         it('should throw BadRequestException for past start date', async () => {
             // Arrange
             const createDto: CreateListingDto = {
