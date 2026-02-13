@@ -129,29 +129,23 @@ describe('ListingsController (e2e)', () => {
         expect(noResults.body).toHaveLength(0);
     });
 
-    it('DEBUG: Check validation behavior', async () => {
-        // Test basic GET first
-        const basic = await request(app.getHttpServer())
-            .get('/listings')
-            .expect(200);
-        console.log('Basic GET response:', basic.body);
+    it('should reject invalid query parameters with 400', async () => {
+        // Valid GET without parameters should work
+        await request(app.getHttpServer()).get('/listings').expect(200);
 
-        // Test with one valid parameter
-        const withValidParam = await request(app.getHttpServer())
+        // Valid numeric parameter should work
+        await request(app.getHttpServer())
             .get('/listings?price=10')
             .expect(200);
-        console.log('Valid param response:', withValidParam.body);
 
-        // Test with invalid parameter
-        const response = await request(app.getHttpServer()).get(
-            '/listings?price=invalid',
+        // Invalid non-numeric price should be rejected by ValidationPipe
+        const response = await request(app.getHttpServer())
+            .get('/listings?price=invalid')
+            .expect(400);
+
+        expect(response.body.message.message).toEqual(
+            expect.arrayContaining([expect.stringContaining('price')]),
         );
-
-        console.log('Invalid param status:', response.status);
-        console.log('Invalid param body:', response.body);
-
-        // Just check that it returns some status (for now)
-        expect([200, 400]).toContain(response.status);
     });
 
     it('should retrieve listing with applications', async () => {

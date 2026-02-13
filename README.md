@@ -3,12 +3,12 @@
 Modern backend server for a pet-sitting platform with REST API,
 TypeScript and comprehensive test coverage.
 
-This project was created as part of a eBusiness course.
+This project was created as part of an eBusiness course.
 
 ## 🚀 Features
 
 - **REST API** for listings and applications with optimized database access
-- **TypeScript 5.8** with strict typing and centralized shared types
+- **TypeScript 5.9** with strict typing and centralized shared types
 - **TypeORM** with SQLite database and SQL-level filtering
 - **Validation** with class-validator/class-transformer and reusable base DTOs
 - **Configuration Management** with type-safe environment validation
@@ -20,7 +20,7 @@ This project was created as part of a eBusiness course.
 ## 🛠️ Tech Stack
 
 - **Framework**: NestJS 11 + Express
-- **Language**: TypeScript 5.8 (ESM Module)
+- **Language**: TypeScript 5.9 (ESM Module)
 - **Database**: TypeORM + SQLite
 - **Testing**: Vitest + Supertest
 - **Validation**: class-validator + class-transformer
@@ -30,8 +30,8 @@ This project was created as part of a eBusiness course.
 ## ⚡ Quick Start
 
 ```bash
-# Installation
-npm install
+# Installation (uses exact versions from package-lock.json)
+npm ci
 
 # Environment Setup (optional)
 # macOS/Linux
@@ -77,7 +77,7 @@ GET    /listings/owner/:ownerId             # Get listings by owner
 ### Applications
 
 ```http
-POST   /listings/:listingId/applications    # Submit application
+POST   /listings/:id/applications        # Submit application
 PATCH  /applications/:id                    # Update status
 GET    /sitters/:sitterId/applications      # Get applications by sitter
 GET    /listings/:listingId/applications    # Get applications for listing
@@ -137,8 +137,8 @@ Note on folders:
 
 ### ✅ Prerequisites
 
-- Node.js >= 22.16
-- npm >= 11.4
+- Node.js 22.x (>= 22.0)
+- npm 11.x (>= 11.0)
 
 ### 🔧 Environment Variables
 
@@ -157,7 +157,7 @@ RATE_LIMIT_LIMIT=100
 
 # Allowed Origins - Comma-separated list
 # Example: `https://a.com, https://b.com`.
-ALLOWED_ORIGINS=http://localhost:3000
+ALLOWED_ORIGINS=http://localhost:3000,http://localhost:4200,http://localhost:8081
 
 # Logging
 LOG_LEVEL=debug

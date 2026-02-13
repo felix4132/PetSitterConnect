@@ -215,26 +215,16 @@ describe('Integrated Scenarios (e2e)', () => {
 
             expect(allAppsResponse.body).toHaveLength(5);
 
-            // Owner entscheidet sich schnell: erste Bewerbung akzeptieren, Rest ablehnen
+            // Owner entscheidet sich schnell: erste Bewerbung akzeptieren
             const firstApplicationId = String(allAppsResponse.body[0].id);
 
-            // Akzeptiere erste Bewerbung
+            // Akzeptiere erste Bewerbung — Auto-Rejection sollte die restlichen ablehnen
             await request(app.getHttpServer())
                 .patch(`/applications/${firstApplicationId}`)
                 .send({ status: 'accepted' })
                 .expect(200);
 
-            // Lehne alle anderen ab
-            for (let i = 1; i < allAppsResponse.body.length; i++) {
-                await request(app.getHttpServer())
-                    .patch(
-                        `/applications/${String(allAppsResponse.body[i].id)}`,
-                    )
-                    .send({ status: 'rejected' })
-                    .expect(200);
-            }
-
-            // Überprüfe finale Verteilung
+            // Überprüfe finale Verteilung — Auto-Rejection hat alle pending automatisch abgelehnt
             const finalAppsResponse = await request(app.getHttpServer())
                 .get(`/listings/${String(listingId)}/applications`)
                 .expect(200);
@@ -354,7 +344,7 @@ describe('Integrated Scenarios (e2e)', () => {
 
             // Überprüfe Owner's Listings
             const ownerListingsResponse = await request(app.getHttpServer())
-                .get(`/listings/owner/${String(ownerId)}`)
+                .get(`/listings/owner/${ownerId}`)
                 .expect(200);
 
             expect(ownerListingsResponse.body).toHaveLength(3);

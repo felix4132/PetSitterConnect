@@ -91,12 +91,12 @@ describe('ApplicationsController (e2e)', () => {
         // Create multiple applications
         await request(app.getHttpServer())
             .post(`/listings/${String(listingId)}/applications`)
-            .send({ sitterId: 'sitter1' })
+            .send({ sitterId: 'unique-sitter-a' })
             .expect(201);
 
         await request(app.getHttpServer())
             .post(`/listings/${String(listingId)}/applications`)
-            .send({ sitterId: 'sitter2' })
+            .send({ sitterId: 'unique-sitter-b' })
             .expect(201);
 
         // Get all applications for the listing
@@ -105,22 +105,20 @@ describe('ApplicationsController (e2e)', () => {
             .expect(200);
         expect(allApplications.body).toHaveLength(2);
 
-        // Get applications by each sitter
-        const sitter1Apps = await request(app.getHttpServer())
-            .get('/sitters/sitter1/applications')
+        // Get applications by each sitter — check only the newly created listing
+        const sitterAApps = await request(app.getHttpServer())
+            .get('/sitters/unique-sitter-a/applications')
             .expect(200);
-        expect(sitter1Apps.body).toHaveLength(3); // 2 from seed + 1 new
-        expect(
-            sitter1Apps.body.some((app: any) => app.sitterId === 'sitter1'),
-        ).toBe(true);
+        expect(sitterAApps.body).toHaveLength(1);
+        expect(sitterAApps.body[0].sitterId).toBe('unique-sitter-a');
+        expect(sitterAApps.body[0].listingId).toBe(listingId);
 
-        const sitter2Apps = await request(app.getHttpServer())
-            .get('/sitters/sitter2/applications')
+        const sitterBApps = await request(app.getHttpServer())
+            .get('/sitters/unique-sitter-b/applications')
             .expect(200);
-        expect(sitter2Apps.body).toHaveLength(2); // 1 from seed + 1 new
-        expect(
-            sitter2Apps.body.some((app: any) => app.sitterId === 'sitter2'),
-        ).toBe(true);
+        expect(sitterBApps.body).toHaveLength(1);
+        expect(sitterBApps.body[0].sitterId).toBe('unique-sitter-b');
+        expect(sitterBApps.body[0].listingId).toBe(listingId);
     });
 
     it('prevents duplicate applications from the same sitter', async () => {
@@ -167,10 +165,6 @@ describe('ApplicationsController (e2e)', () => {
     });
 
     it('handles validation errors with custom messages', async () => {
-        // TODO: This test fails because ValidationPipe is not properly configured in E2E tests
-        // The validation should reject invalid status values but currently accepts them
-        // This is a known issue that needs to be investigated further
-
         // Create a listing first
         const createRes = await request(app.getHttpServer())
             .post('/listings')
@@ -185,52 +179,37 @@ describe('ApplicationsController (e2e)', () => {
             .expect(201);
         const applicationId: number = applyRes.body.id;
 
-        // Test invalid status in PATCH request
-        // Note: In the test environment, the validation might not work exactly as in production
-        // The service should either return 400 (validation error) or 500 (database constraint error)
+        // Test invalid status in PATCH request — ValidationPipe @IsIn should reject with 400
         const invalidStatusRes = await request(app.getHttpServer())
             .patch(`/applications/${String(applicationId)}`)
-            .send({ status: 'invalid_status' });
+            .send({ status: 'invalid_status' })
+            .expect(400);
 
-        // Expect either 400 (validation error) or 500 (service error)
-        expect([400, 500]).toContain(invalidStatusRes.status);
-        // The validation error message check depends on whether we get 400 or 500
-        if (invalidStatusRes.status === 400) {
-            expect(Array.isArray(invalidStatusRes.body.message.message)).toBe(
-                true,
-            );
-            expect(invalidStatusRes.body.message.message[0]).toContain(
-                'status must be one of the following values: pending, accepted, rejected',
-            );
-        } else if (invalidStatusRes.status === 500) {
-            expect(invalidStatusRes.body.message.message).toContain(
-                'Failed to update application status',
-            );
-        }
+        expect(invalidStatusRes.body.message.message).toEqual(
+            expect.arrayContaining([
+                expect.stringContaining('status must be one of'),
+            ]),
+        );
 
-        // Test missing sitterId in POST request
+        // Test missing sitterId in POST request — should be 400
         const missingSitterRes = await request(app.getHttpServer())
             .post(`/listings/${String(listingId)}/applications`)
-            .send({});
+            .send({})
+            .expect(400);
 
-        // Expect either 400 (validation error) or 500 (service error)
-        expect([400, 500]).toContain(missingSitterRes.status);
+        expect(missingSitterRes.body.message.message).toEqual(
+            expect.arrayContaining([expect.stringContaining('sitterId')]),
+        );
 
-        if (missingSitterRes.status === 400) {
-            expect(missingSitterRes.body.message.message).toContain('sitterId');
-        }
-
-        // Test empty sitterId
+        // Test empty sitterId — ValidationPipe @IsNotEmpty should catch this
         const emptySitterRes = await request(app.getHttpServer())
             .post(`/listings/${String(listingId)}/applications`)
-            .send({ sitterId: '' });
+            .send({ sitterId: '' })
+            .expect(400);
 
-        // Expect either 400 (validation error) or 500 (service error)
-        expect([400, 500]).toContain(emptySitterRes.status);
-
-        if (emptySitterRes.status === 400) {
-            expect(emptySitterRes.body.message.message).toContain('sitterId');
-        }
+        expect(emptySitterRes.body.message.message).toEqual(
+            expect.arrayContaining([expect.stringContaining('sitterId')]),
+        );
     });
 
     it('handles application to non-existent listing gracefully', async () => {
